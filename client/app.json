@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.3ohtwo"
     },
     "android": {
       "adaptiveIcon": {
@@ -24,6 +25,7 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "@maplibre/maplibre-react-native",
       "expo-router",
       [
         "expo-splash-screen",

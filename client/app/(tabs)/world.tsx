@@ -1,9 +1,10 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from "react-native";
+import Map from "@/components/Map";
 
 export default function Tab() {
   return (
     <View style={styles.container}>
-      <Text>Tab World</Text>
+      <Map />
     </View>
   );
 }
@@ -11,7 +12,7 @@ export default function Tab() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
