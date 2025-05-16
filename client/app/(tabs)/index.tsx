@@ -4,7 +4,7 @@ import Map from "@/components/Map";
 export default function Tab() {
 	return (
 		<View style={styles.container}>
-			<Map initialLocation={[1, 2]} />
+			<Map />
 		</View>
 	);
 }

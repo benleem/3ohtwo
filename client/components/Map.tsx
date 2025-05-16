@@ -1,16 +1,14 @@
-import React, { useEffect, useRef } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import { StyleSheet } from "react-native";
 import { MapView, MapViewRef } from "@maplibre/maplibre-react-native";
+import { useLocationContext } from "@/context/LocationContext";
 
-type MapProps = {
-	initialLocation: [number, number];
-};
-
-export default function Map({ initialLocation }: MapProps) {
+export default function Map() {
+	const { location } = useLocationContext()!;
 	const mapViewRef = useRef<MapViewRef | null>(null);
 
 	useEffect(() => {
-		console.log("Hello");
+		console.log(location);
 	});
 
 	return (
