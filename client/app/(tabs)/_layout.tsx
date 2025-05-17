@@ -14,16 +14,7 @@ export default function TabLayout() {
 				options={{
 					tabBarShowLabel: false,
 					tabBarIcon: ({ color }) => (
-						<FontAwesome size={28} name="home" color={color} />
-					),
-				}}
-			/>
-			<Tabs.Screen
-				name="world"
-				options={{
-					tabBarShowLabel: false,
-					tabBarIcon: ({ color }) => (
-						<Entypo size={28} name="network" color={color} />
+						<FontAwesome size={28} name="map" color={color} />
 					),
 				}}
 			/>

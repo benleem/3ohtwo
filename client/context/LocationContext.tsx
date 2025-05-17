@@ -18,7 +18,7 @@ export const useLocationContext = () => useContext(LocationContext);
 export const LocationProvider: React.FC<{ children: ReactNode }> = ({
 	children,
 }) => {
-	const [location, setLocation] = useState<Location>([0, 0]);
+	const [location, setLocation] = useState<Location>([100, 50]);
 
 	const updateLocation = (newLoc: Location) => {
 		setLocation(newLoc);
