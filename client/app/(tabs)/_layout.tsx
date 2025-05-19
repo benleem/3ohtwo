@@ -7,21 +7,31 @@ export default function TabLayout() {
 			screenOptions={{
 				tabBarActiveTintColor: "blue",
 				headerShown: false,
+				tabBarShowLabel: true,
 			}}
 		>
 			<Tabs.Screen
 				name="index"
 				options={{
-					tabBarShowLabel: false,
+					title: "Spots",
 					tabBarIcon: ({ color }) => (
 						<FontAwesome size={28} name="map" color={color} />
 					),
 				}}
 			/>
 			<Tabs.Screen
+				name="upload"
+				options={{
+					title: "Upload",
+					tabBarIcon: ({ color }) => (
+						<FontAwesome size={28} name="upload" color={color} />
+					),
+				}}
+			/>
+			<Tabs.Screen
 				name="settings"
 				options={{
-					tabBarShowLabel: false,
+					title: "Settings",
 					tabBarIcon: ({ color }) => (
 						<FontAwesome size={28} name="cog" color={color} />
 					),

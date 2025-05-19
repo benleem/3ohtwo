@@ -4,36 +4,47 @@ import {
 	Camera,
 	MapView,
 	MapViewRef,
-	RegionPayload,
+	UserLocation,
+	Location,
 } from "@maplibre/maplibre-react-native";
 // import { useLocationContext } from "@/context/LocationContext";
 
-// type DefaultLocation = {
-// 	coords: [number, number];
-// 	zoom: number;
-// };
+type DefaultLocation = {
+	coords: [number, number];
+	zoom: number;
+};
 
 export default function Map() {
-	// const [defaultLoc, setDefaultLoc] = useState<>(mapViewRef);
 	// const { location, updateLocation } = useLocationContext()!;
+	const [defaultLoc, setDefaultLoc] = useState<DefaultLocation>({
+		coords: [-100, 40],
+		zoom: 3,
+	});
 	const mapViewRef = useRef<MapViewRef | null>(null);
 
-	// const handleRegionDidChange: any() => {return 4}
+	const handleUserLocUpdate = (loc: Location) => {
+		setDefaultLoc({
+			coords: [loc.coords.longitude, loc.coords.latitude],
+			zoom: 10,
+		});
+	};
 
-	// useEffect(() => {
-	// 	return () => {
-	// 		console.log(mapViewRef.current?.getCenter());
-	// 		console.log(mapViewRef.current?.getZoom());
-	// 	};
-	// }, []);
+	useEffect(() => {
+		// return () => {
+		// 	console.log(mapViewRef.current?.getCenter());
+		// 	console.log(mapViewRef.current?.getZoom());
+		// };
+	}, []);
 
 	return (
 		<MapView
 			ref={mapViewRef}
 			style={styles.map}
 			mapStyle={"https://tiles.openfreemap.org/styles/liberty"}
-			attributionEnabled={false}
+			attributionPosition={{ top: 0, left: 8 }}
 			compassEnabled={true}
+			compassViewMargins={{ x: 8, y: 8 }}
+			compassViewPosition={2}
 			localizeLabels={true}
 			// onRegionDidChange={(
 			// 	feature: GeoJSON.Feature<GeoJSON.Point, RegionPayload>
@@ -46,12 +57,16 @@ export default function Map() {
 			// 	console.log(mapCenter);
 			// }}
 		>
-			{/* <Camera centerCoordinate={location} /> */}
 			<Camera
 				defaultSettings={{
-					centerCoordinate: [-100, 40],
-					zoomLevel: 3,
+					centerCoordinate: defaultLoc.coords,
+					zoomLevel: defaultLoc.zoom,
 				}}
+			/>
+			<UserLocation
+				visible={true}
+				showsUserHeadingIndicator={true}
+				onUpdate={(loc: Location) => handleUserLocUpdate(loc)}
 			/>
 		</MapView>
 	);
