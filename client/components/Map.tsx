@@ -6,35 +6,31 @@ import {
 	MapViewRef,
 	UserLocation,
 	Location,
+	CameraRef,
 } from "@maplibre/maplibre-react-native";
-// import { useLocationContext } from "@/context/LocationContext";
-
-type DefaultLocation = {
-	coords: [number, number];
-	zoom: number;
-};
+import { useUserLocationContext } from "@/context/UserLocationContext";
 
 export default function Map() {
-	// const { location, updateLocation } = useLocationContext()!;
-	const [defaultLoc, setDefaultLoc] = useState<DefaultLocation>({
-		coords: [-100, 40],
-		zoom: 3,
-	});
+	const { userLoc, updateUserLoc } = useUserLocationContext()!;
 	const mapViewRef = useRef<MapViewRef | null>(null);
+	const cameraRef = useRef<CameraRef | null>(null);
 
 	const handleUserLocUpdate = (loc: Location) => {
-		setDefaultLoc({
+		updateUserLoc({
 			coords: [loc.coords.longitude, loc.coords.latitude],
 			zoom: 10,
 		});
+		cameraRef.current?.setCamera({
+			stops: [
+				{
+					centerCoordinate: [loc.coords.longitude, loc.coords.latitude],
+					zoomLevel: 10,
+					animationMode: "flyTo",
+					animationDuration: 1500,
+				},
+			],
+		});
 	};
-
-	useEffect(() => {
-		// return () => {
-		// 	console.log(mapViewRef.current?.getCenter());
-		// 	console.log(mapViewRef.current?.getZoom());
-		// };
-	}, []);
 
 	return (
 		<MapView
@@ -58,9 +54,10 @@ export default function Map() {
 			// }}
 		>
 			<Camera
+				ref={cameraRef}
 				defaultSettings={{
-					centerCoordinate: defaultLoc.coords,
-					zoomLevel: defaultLoc.zoom,
+					centerCoordinate: userLoc.coords,
+					zoomLevel: userLoc.zoom,
 				}}
 			/>
 			<UserLocation
