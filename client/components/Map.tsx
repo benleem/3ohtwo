@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { StyleSheet } from "react-native";
+import { Button, StyleSheet, Text, Pressable } from "react-native";
 import {
 	Camera,
 	MapView,
@@ -9,6 +9,8 @@ import {
 	CameraRef,
 } from "@maplibre/maplibre-react-native";
 import { useUserLocationContext } from "@/context/UserLocationContext";
+import Filter from "./Filter";
+import FindUserPressable from "./FindUserPressable";
 
 export default function Map() {
 	const { userLoc, updateUserLoc } = useUserLocationContext()!;
@@ -16,15 +18,18 @@ export default function Map() {
 	const cameraRef = useRef<CameraRef | null>(null);
 
 	const handleUserLocUpdate = (loc: Location) => {
+		let zoom = 11;
+		let coords: [number, number] = [loc.coords.longitude, loc.coords.latitude];
 		updateUserLoc({
-			coords: [loc.coords.longitude, loc.coords.latitude],
-			zoom: 10,
+			isEnabled: true,
+			coords,
+			zoom,
 		});
 		cameraRef.current?.setCamera({
 			stops: [
 				{
-					centerCoordinate: [loc.coords.longitude, loc.coords.latitude],
-					zoomLevel: 10,
+					centerCoordinate: coords,
+					zoomLevel: zoom,
 					animationMode: "flyTo",
 					animationDuration: 1500,
 				},
@@ -32,40 +37,38 @@ export default function Map() {
 		});
 	};
 
+	useEffect(() => {
+		console.log(userLoc);
+	}, [userLoc]);
+
 	return (
-		<MapView
-			ref={mapViewRef}
-			style={styles.map}
-			mapStyle={"https://tiles.openfreemap.org/styles/liberty"}
-			attributionPosition={{ top: 0, left: 8 }}
-			compassEnabled={true}
-			compassViewMargins={{ x: 8, y: 8 }}
-			compassViewPosition={2}
-			localizeLabels={true}
-			// onRegionDidChange={(
-			// 	feature: GeoJSON.Feature<GeoJSON.Point, RegionPayload>
-			// ) => {
-			// 	let loc = feature.properties.visibleBounds[1];
-			// 	let zoom = feature.properties.zoomLevel;
-			// 	console.log(`loc: ${loc}, zoom: ${zoom}`);
-			// 	updateLocation([]);
-			// 	let mapCenter = mapViewRef.current?.getCenter();
-			// 	console.log(mapCenter);
-			// }}
-		>
-			<Camera
-				ref={cameraRef}
-				defaultSettings={{
-					centerCoordinate: userLoc.coords,
-					zoomLevel: userLoc.zoom,
-				}}
-			/>
-			<UserLocation
-				visible={true}
-				showsUserHeadingIndicator={true}
-				onUpdate={(loc: Location) => handleUserLocUpdate(loc)}
-			/>
-		</MapView>
+		<>
+			<Filter />
+			{userLoc.isEnabled && <FindUserPressable cameraRef={cameraRef} />}
+			<MapView
+				ref={mapViewRef}
+				style={styles.map}
+				mapStyle={"https://tiles.openfreemap.org/styles/liberty"}
+				attributionPosition={{ top: 0, left: 8 }}
+				compassEnabled={true}
+				compassViewMargins={{ x: 8, y: 8 }}
+				compassViewPosition={2}
+				localizeLabels={true}
+			>
+				<Camera
+					ref={cameraRef}
+					defaultSettings={{
+						centerCoordinate: userLoc.coords,
+						zoomLevel: userLoc.zoom,
+					}}
+				/>
+				<UserLocation
+					visible={true}
+					showsUserHeadingIndicator={true}
+					onUpdate={(loc: Location) => handleUserLocUpdate(loc)}
+				/>
+			</MapView>
+		</>
 	);
 }
 

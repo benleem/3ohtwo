@@ -6,9 +6,9 @@ import {
 	useEffect,
 } from "react";
 import * as Location from "expo-location";
-import { Alert } from "react-native";
 
-export type MapLocation = {
+export type UserLocation = {
+	isEnabled: boolean;
 	coords: [number, number];
 	zoom: number;
 };
@@ -18,8 +18,8 @@ export type MapLocation = {
 // }
 
 type UserLocationContextProps = {
-	userLoc: MapLocation;
-	updateUserLoc: (newLoc: MapLocation) => void;
+	userLoc: UserLocation;
+	updateUserLoc: (newLoc: UserLocation) => void;
 };
 
 const UserLocationContext = createContext<UserLocationContextProps | null>(
@@ -28,14 +28,25 @@ const UserLocationContext = createContext<UserLocationContextProps | null>(
 
 export const useUserLocationContext = () => useContext(UserLocationContext);
 
+// export const userLocationReducer = (): MapLocation => {
+// 	switch (action.type) {
+// 		case "ADD_TODO":
+// 			return [...state, action.payload];
+// 		case "UPDATE_TODO":
+// 			return state.map((todo) =>
+// 				todo.id === action.payload ? { ...todo, status: true } : todo
+// 			);
+// 		default:
+// 			return state;
+// 	}
+// };
+
 export const UserLocationProvider: React.FC<{ children: ReactNode }> = ({
 	children,
 }) => {
-	// const [location, setLocation] = useState<Location.LocationObject | null>(
-	// 	null
-	// );
-	// const [errorMsg, setErrorMsg] = useState<string | null>(null);
-	const [userLoc, setUserLoc] = useState<MapLocation>({
+	// const [location, setLocation] = useState<Location.LocationObject | null>
+	const [userLoc, setUserLoc] = useState<UserLocation>({
+		isEnabled: false,
 		coords: [-100, 40],
 		zoom: 3,
 	});
@@ -44,18 +55,15 @@ export const UserLocationProvider: React.FC<{ children: ReactNode }> = ({
 		async function getCurrentLocation() {
 			let { status } = await Location.requestForegroundPermissionsAsync();
 			if (status !== "granted") {
-				console.log("Permission to access location was denied");
+				setUserLoc({ ...userLoc, isEnabled: false });
 				return;
 			}
-
-			// let location = await Location.getCurrentPositionAsync({});
-			// setLocation(location);
+			setUserLoc({ ...userLoc, isEnabled: true });
 		}
-
 		getCurrentLocation();
 	}, []);
 
-	const updateUserLoc = (newLoc: MapLocation) => {
+	const updateUserLoc = (newLoc: UserLocation) => {
 		setUserLoc(newLoc);
 	};
 
