@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Button, StyleSheet, Text, Pressable } from "react-native";
+import React, { useRef } from "react";
+import { StyleSheet } from "react-native";
 import {
 	Camera,
 	MapView,
@@ -13,17 +13,20 @@ import Filter from "./Filter";
 import FindUserPressable from "./FindUserPressable";
 
 export default function Map() {
-	const { userLoc, updateUserLoc } = useUserLocationContext()!;
+	const { userLoc, dispatch } = useUserLocationContext()!;
 	const mapViewRef = useRef<MapViewRef | null>(null);
 	const cameraRef = useRef<CameraRef | null>(null);
 
 	const handleUserLocUpdate = (loc: Location) => {
-		let zoom = 11;
+		let zoom = 16;
 		let coords: [number, number] = [loc.coords.longitude, loc.coords.latitude];
-		updateUserLoc({
-			isEnabled: true,
-			coords,
-			zoom,
+		dispatch({
+			type: "update_location",
+			payload: {
+				isEnabled: true,
+				coords,
+				zoom,
+			},
 		});
 		cameraRef.current?.setCamera({
 			stops: [
@@ -31,15 +34,11 @@ export default function Map() {
 					centerCoordinate: coords,
 					zoomLevel: zoom,
 					animationMode: "flyTo",
-					animationDuration: 1500,
+					animationDuration: 2000,
 				},
 			],
 		});
 	};
-
-	useEffect(() => {
-		console.log(userLoc);
-	}, [userLoc]);
 
 	return (
 		<>
@@ -49,9 +48,9 @@ export default function Map() {
 				ref={mapViewRef}
 				style={styles.map}
 				mapStyle={"https://tiles.openfreemap.org/styles/liberty"}
-				attributionPosition={{ top: 0, left: 8 }}
+				attributionPosition={{ top: 0, left: 12 }}
 				compassEnabled={true}
-				compassViewMargins={{ x: 8, y: 8 }}
+				compassViewMargins={{ x: 12, y: 12 }}
 				compassViewPosition={2}
 				localizeLabels={true}
 			>

@@ -10,7 +10,7 @@ type FindUserPressbableProps = {
 export default function FindUserPressable({
 	cameraRef,
 }: FindUserPressbableProps) {
-	const { userLoc, updateUserLoc } = useUserLocationContext()!;
+	const { userLoc, dispatch } = useUserLocationContext()!;
 
 	const panToUser = () => {
 		let zoom = userLoc.zoom;
@@ -22,7 +22,7 @@ export default function FindUserPressable({
 			stops: [
 				{
 					centerCoordinate: coords,
-					zoomLevel: 16,
+					zoomLevel: zoom,
 					animationMode: "flyTo",
 					animationDuration: 2000,
 				},
@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
 	},
 
 	button: {
-		padding: 10,
+		padding: 8,
 		borderRadius: 100,
 		backgroundColor: "rgba(255, 255, 255, 1)",
 		shadowColor: "#000",

@@ -4,22 +4,25 @@ import {
 	ReactNode,
 	useState,
 	useEffect,
+	Dispatch,
+	useReducer,
 } from "react";
 import * as Location from "expo-location";
 
-export type UserLocation = {
+type UserLocation = {
 	isEnabled: boolean;
 	coords: [number, number];
 	zoom: number;
 };
 
-// interface Location {
-// 	location: [number, number];
-// }
+type UserLocationAction = {
+	type: "update_location";
+	payload: UserLocation;
+};
 
 type UserLocationContextProps = {
 	userLoc: UserLocation;
-	updateUserLoc: (newLoc: UserLocation) => void;
+	dispatch: Dispatch<UserLocationAction>;
 };
 
 const UserLocationContext = createContext<UserLocationContextProps | null>(
@@ -28,24 +31,22 @@ const UserLocationContext = createContext<UserLocationContextProps | null>(
 
 export const useUserLocationContext = () => useContext(UserLocationContext);
 
-// export const userLocationReducer = (): MapLocation => {
-// 	switch (action.type) {
-// 		case "ADD_TODO":
-// 			return [...state, action.payload];
-// 		case "UPDATE_TODO":
-// 			return state.map((todo) =>
-// 				todo.id === action.payload ? { ...todo, status: true } : todo
-// 			);
-// 		default:
-// 			return state;
-// 	}
-// };
+export const userLocationReducer = (
+	state: UserLocation,
+	action: UserLocationAction
+): UserLocation => {
+	switch (action.type) {
+		case "update_location":
+			return action.payload;
+		default:
+			return state;
+	}
+};
 
 export const UserLocationProvider: React.FC<{ children: ReactNode }> = ({
 	children,
 }) => {
-	// const [location, setLocation] = useState<Location.LocationObject | null>
-	const [userLoc, setUserLoc] = useState<UserLocation>({
+	const [userLoc, dispatch] = useReducer(userLocationReducer, {
 		isEnabled: false,
 		coords: [-100, 40],
 		zoom: 3,
@@ -55,20 +56,22 @@ export const UserLocationProvider: React.FC<{ children: ReactNode }> = ({
 		async function getCurrentLocation() {
 			let { status } = await Location.requestForegroundPermissionsAsync();
 			if (status !== "granted") {
-				setUserLoc({ ...userLoc, isEnabled: false });
+				dispatch({
+					type: "update_location",
+					payload: { ...userLoc, isEnabled: false },
+				});
 				return;
 			}
-			setUserLoc({ ...userLoc, isEnabled: true });
+			dispatch({
+				type: "update_location",
+				payload: { ...userLoc, isEnabled: true },
+			});
 		}
 		getCurrentLocation();
 	}, []);
 
-	const updateUserLoc = (newLoc: UserLocation) => {
-		setUserLoc(newLoc);
-	};
-
 	return (
-		<UserLocationContext.Provider value={{ userLoc, updateUserLoc }}>
+		<UserLocationContext.Provider value={{ userLoc, dispatch }}>
 			{children}
 		</UserLocationContext.Provider>
 	);
