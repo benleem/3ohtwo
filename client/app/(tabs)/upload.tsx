@@ -1,17 +1,17 @@
 import { View, Text, StyleSheet } from "react-native";
 
 export default function Tab() {
-  return (
-    <View style={styles.container}>
-      <Text>Tab Upload</Text>
-    </View>
-  );
+	return (
+		<View style={styles.container}>
+			<Text>Tab Upload</Text>
+		</View>
+	);
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+	container: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+	},
 });

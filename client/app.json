@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.3ohtwo"
     },
     "android": {
       "adaptiveIcon": {
@@ -33,7 +34,18 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      "@maplibre/maplibre-react-native",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location.",
+          "isIosBackgroundLocationEnabled":true,
+          "isAndroidBackgroundLocationEnabled":true,
+          "isAndroidForegroundServiceEnabled":true
+        }
       ]
+
     ],
     "experiments": {
       "typedRoutes": true
