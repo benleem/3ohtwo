@@ -1,12 +1,13 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { StyleSheet } from "react-native";
 import {
 	Camera,
 	MapView,
-	MapViewRef,
 	UserLocation,
 	Location,
 	CameraRef,
+	UserTrackingMode,
+	MapViewRef,
 } from "@maplibre/maplibre-react-native";
 import { useUserLocationContext } from "@/context/UserLocationContext";
 import Filter from "./Filter";
@@ -14,36 +15,27 @@ import FindUserPressable from "./FindUserPressable";
 
 export default function Map() {
 	const { userLoc, dispatch } = useUserLocationContext()!;
+	const [followUser, setFollowUser] = useState(true);
 	const mapViewRef = useRef<MapViewRef | null>(null);
 	const cameraRef = useRef<CameraRef | null>(null);
 
 	const handleUserLocUpdate = (loc: Location) => {
-		let zoom = 16;
+		let zoom = 17;
 		let coords: [number, number] = [loc.coords.longitude, loc.coords.latitude];
 		dispatch({
 			type: "update_location",
 			payload: {
-				isEnabled: true,
+				enabled: true,
 				coords,
 				zoom,
 			},
-		});
-		cameraRef.current?.setCamera({
-			stops: [
-				{
-					centerCoordinate: coords,
-					zoomLevel: zoom,
-					animationMode: "flyTo",
-					animationDuration: 2000,
-				},
-			],
 		});
 	};
 
 	return (
 		<>
 			<Filter />
-			{userLoc.isEnabled && <FindUserPressable cameraRef={cameraRef} />}
+			{userLoc.enabled && <FindUserPressable setFollowUser={setFollowUser} />}
 			<MapView
 				ref={mapViewRef}
 				style={styles.map}
@@ -60,10 +52,18 @@ export default function Map() {
 						centerCoordinate: userLoc.coords,
 						zoomLevel: userLoc.zoom,
 					}}
+					followUserLocation={userLoc.enabled ? followUser : false}
+					followUserMode={UserTrackingMode.FollowWithCourse}
+					// followZoomLevel={followUser ? 17 : undefined}
+					onUserTrackingModeChange={(e) => {
+						if (!e.nativeEvent.payload.followUserLocation) {
+							setFollowUser(false);
+						}
+					}}
 				/>
 				<UserLocation
-					visible={true}
-					showsUserHeadingIndicator={true}
+					visible
+					showsUserHeadingIndicator
 					onUpdate={(loc: Location) => handleUserLocUpdate(loc)}
 				/>
 			</MapView>

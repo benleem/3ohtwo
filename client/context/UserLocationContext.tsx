@@ -2,7 +2,6 @@ import {
 	createContext,
 	useContext,
 	ReactNode,
-	useState,
 	useEffect,
 	Dispatch,
 	useReducer,
@@ -10,7 +9,7 @@ import {
 import * as Location from "expo-location";
 
 type UserLocation = {
-	isEnabled: boolean;
+	enabled: boolean;
 	coords: [number, number];
 	zoom: number;
 };
@@ -47,7 +46,7 @@ export const UserLocationProvider: React.FC<{ children: ReactNode }> = ({
 	children,
 }) => {
 	const [userLoc, dispatch] = useReducer(userLocationReducer, {
-		isEnabled: false,
+		enabled: false,
 		coords: [-100, 40],
 		zoom: 3,
 	});
@@ -58,13 +57,13 @@ export const UserLocationProvider: React.FC<{ children: ReactNode }> = ({
 			if (status !== "granted") {
 				dispatch({
 					type: "update_location",
-					payload: { ...userLoc, isEnabled: false },
+					payload: { ...userLoc, enabled: false },
 				});
 				return;
 			}
 			dispatch({
 				type: "update_location",
-				payload: { ...userLoc, isEnabled: true },
+				payload: { ...userLoc, enabled: true },
 			});
 		}
 		getCurrentLocation();

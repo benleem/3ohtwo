@@ -1,38 +1,17 @@
-import { StyleSheet, Text, Pressable, View } from "react-native";
-import { CameraRef } from "@maplibre/maplibre-react-native";
+import { StyleSheet, Pressable, View } from "react-native";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import { useUserLocationContext } from "@/context/UserLocationContext";
+import { Dispatch, SetStateAction } from "react";
 
 type FindUserPressbableProps = {
-	cameraRef: React.RefObject<CameraRef | null>;
+	setFollowUser: Dispatch<SetStateAction<boolean>>;
 };
 
 export default function FindUserPressable({
-	cameraRef,
+	setFollowUser,
 }: FindUserPressbableProps) {
-	const { userLoc, dispatch } = useUserLocationContext()!;
-
-	const panToUser = () => {
-		let zoom = userLoc.zoom;
-		let coords = userLoc.coords;
-		// set camera with same attributes on iOS, workaround
-		// https://github.com/maplibre/maplibre-react-native/issues/571
-		cameraRef.current?.setCamera({});
-		cameraRef.current?.setCamera({
-			stops: [
-				{
-					centerCoordinate: coords,
-					zoomLevel: zoom,
-					animationMode: "flyTo",
-					animationDuration: 2000,
-				},
-			],
-		});
-	};
-
 	return (
 		<View style={styles.findUserContainer}>
-			<Pressable style={styles.button} onPress={panToUser}>
+			<Pressable style={styles.button} onPress={() => setFollowUser(true)}>
 				<FontAwesome6 name="location-crosshairs" size={24} color="black" />
 			</Pressable>
 		</View>
