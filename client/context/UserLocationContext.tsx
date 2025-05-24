@@ -8,9 +8,11 @@ import {
 } from "react";
 import * as Location from "expo-location";
 
+export type Coords = [number, number];
+
 type UserLocation = {
 	enabled: boolean;
-	coords: [number, number];
+	coords: Coords | null;
 	zoom: number;
 };
 
@@ -47,7 +49,7 @@ export const UserLocationProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
 	const [userLoc, dispatch] = useReducer(userLocationReducer, {
 		enabled: false,
-		coords: [-100, 40],
+		coords: null,
 		zoom: 3,
 	});
 

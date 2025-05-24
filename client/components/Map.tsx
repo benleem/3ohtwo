@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import {
 	Camera,
 	MapView,
@@ -9,9 +9,10 @@ import {
 	UserTrackingMode,
 	MapViewRef,
 } from "@maplibre/maplibre-react-native";
-import { useUserLocationContext } from "@/context/UserLocationContext";
+import { Coords, useUserLocationContext } from "@/context/UserLocationContext";
 import Filter from "./Filter";
 import FindUserPressable from "./FindUserPressable";
+import MapBottomSheet from "./MapBottomSheet";
 
 export default function Map() {
 	const { userLoc, dispatch } = useUserLocationContext()!;
@@ -21,7 +22,7 @@ export default function Map() {
 
 	const handleUserLocUpdate = (loc: Location) => {
 		let zoom = 17;
-		let coords: [number, number] = [loc.coords.longitude, loc.coords.latitude];
+		let coords: Coords = [loc.coords.longitude, loc.coords.latitude];
 		dispatch({
 			type: "update_location",
 			payload: {
@@ -35,7 +36,9 @@ export default function Map() {
 	return (
 		<>
 			<Filter />
-			{userLoc.enabled && <FindUserPressable setFollowUser={setFollowUser} />}
+			{userLoc.enabled && userLoc.coords !== null && (
+				<FindUserPressable setFollowUser={setFollowUser} />
+			)}
 			<MapView
 				ref={mapViewRef}
 				style={styles.map}
@@ -48,13 +51,18 @@ export default function Map() {
 			>
 				<Camera
 					ref={cameraRef}
-					defaultSettings={{
-						centerCoordinate: userLoc.coords,
-						zoomLevel: userLoc.zoom,
-					}}
-					followUserLocation={userLoc.enabled ? followUser : false}
+					defaultSettings={
+						!userLoc.enabled && userLoc.coords === null
+							? {
+									centerCoordinate: [-100, 40],
+									zoomLevel: userLoc.zoom,
+							  }
+							: {}
+					}
+					followUserLocation={
+						userLoc.enabled && userLoc.coords !== null ? followUser : false
+					}
 					followUserMode={UserTrackingMode.FollowWithCourse}
-					// followZoomLevel={followUser ? 17 : undefined}
 					onUserTrackingModeChange={(e) => {
 						if (!e.nativeEvent.payload.followUserLocation) {
 							setFollowUser(false);
@@ -67,12 +75,14 @@ export default function Map() {
 					onUpdate={(loc: Location) => handleUserLocUpdate(loc)}
 				/>
 			</MapView>
+			<MapBottomSheet />
 		</>
 	);
 }
 
 const styles = StyleSheet.create({
 	map: {
+		zIndex: -1,
 		width: "100%",
 		height: "100%",
 	},

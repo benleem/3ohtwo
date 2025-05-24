@@ -20,7 +20,7 @@ export default function FindUserPressable({
 
 const styles = StyleSheet.create({
 	findUserContainer: {
-		zIndex: 1,
+		zIndex: 0,
 		position: "absolute",
 		bottom: 12,
 		right: 12,
