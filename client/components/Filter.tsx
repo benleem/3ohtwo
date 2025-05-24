@@ -8,27 +8,29 @@ type FilterButtonProps = {
 	handleOnPress: () => void;
 };
 
-const FilterButton: React.FC<FilterButtonProps> = ({ text, handleOnPress }) => (
-	<Pressable
-		onPress={handleOnPress}
-		disabled={text == "Public" && true}
-		// style={styles.button}
-		// style={state.disabled ? styles.disabledButton : styles.button}
-		style={({ pressed }) => [
-			styles.button,
-			text == "Public" && {
-				opacity: 0.5,
-			},
-		]}
-	>
-		<Entypo
-			name={text == "Public" ? "network" : "user"}
-			size={16}
-			color="black"
-		/>
-		<Text style={styles.buttonText}>{text}</Text>
-	</Pressable>
-);
+function FilterButton({ text, handleOnPress }: FilterButtonProps) {
+	return (
+		<Pressable
+			onPress={handleOnPress}
+			disabled={text == "Public" && true}
+			// style={styles.button}
+			// style={state.disabled ? styles.disabledButton : styles.button}
+			style={({ pressed }) => [
+				styles.button,
+				text == "Public" && {
+					opacity: 0.5,
+				},
+			]}
+		>
+			<Entypo
+				name={text == "Public" ? "network" : "user"}
+				size={16}
+				color="black"
+			/>
+			<Text style={styles.buttonText}>{text}</Text>
+		</Pressable>
+	);
+}
 
 export default function Filter() {
 	const handlePublicPress = () => {
@@ -48,7 +50,7 @@ export default function Filter() {
 
 const styles = StyleSheet.create({
 	filterContainer: {
-		zIndex: 1,
+		zIndex: 0,
 		display: "flex",
 		flexDirection: "row",
 		gap: 12,
