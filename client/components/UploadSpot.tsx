@@ -10,7 +10,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Coords } from "@/context/UserLocationContext";
 import { Dispatch, SetStateAction, useState } from "react";
 
-enum Categories {
+enum Category {
 	Read = "read",
 	Chill = "chill",
 	Scenic = "scenic",
@@ -22,7 +22,7 @@ enum Categories {
 
 type SpotInputs = {
 	name: string;
-	categories: Categories[];
+	categories: Category[];
 	coords: Coords | undefined;
 	public: boolean;
 };
@@ -33,10 +33,10 @@ type CategoryButtonsProps = {
 
 function CategoryButtons({ setInputs }: CategoryButtonsProps) {
 	const iterateCategories = () => {
-		let categories: Categories[] = [];
-		const keys = Object.keys(Categories);
+		let categories: Category[] = [];
+		const keys = Object.keys(Category);
 		keys.forEach((key) => {
-			categories.push(Categories[key as keyof typeof Categories]);
+			categories.push(Category[key as keyof typeof Category]);
 		});
 		return categories;
 	};
@@ -72,8 +72,10 @@ export default function UploadSpot() {
 
 	return (
 		<SafeAreaView style={styles.uploadContainer}>
+			<Text style={styles.title}>Add Spot</Text>
 			<TextInput
 				style={styles.textInput}
+				placeholderTextColor={"gray"}
 				placeholder="Spot name"
 				onChangeText={(text) => setInputs({ ...inputs, name: text })}
 				value={inputs.name}
@@ -90,6 +92,12 @@ export default function UploadSpot() {
 }
 
 const styles = StyleSheet.create({
+	title: {
+		fontSize: 24,
+		fontWeight: 700,
+		paddingHorizontal: 12,
+		paddingBottom: 12,
+	},
 	uploadContainer: {
 		// backgroundColor: "green",
 	},
@@ -104,6 +112,7 @@ const styles = StyleSheet.create({
 	},
 	flatListContainer: {
 		paddingHorizontal: 12,
+		marginBottom: 12,
 		gap: 12,
 	},
 	categoryButton: {

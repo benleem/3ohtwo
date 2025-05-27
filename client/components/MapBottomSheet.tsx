@@ -1,28 +1,25 @@
-import React, { useCallback, useMemo, useRef } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import React from "react";
+import { StyleSheet } from "react-native";
+import { BottomSheetView } from "@gorhom/bottom-sheet";
+import { MapBottomSheetProvider } from "@/context/BottomSheetContext";
 
-export default function MapBottomSheet() {
-	const bottomSheetRef = useRef<BottomSheet>(null);
+type MapBottomSheetProps = {
+	children: React.ReactNode;
+};
 
-	const handleSheetChanges = useCallback((index: number) => {
-		console.log("handleSheetChanges", index);
-	}, []);
-
+export default function MapBottomSheet({ children }: MapBottomSheetProps) {
 	return (
-		<BottomSheet ref={bottomSheetRef}>
+		<MapBottomSheetProvider>
 			<BottomSheetView style={styles.contentContainer}>
-				<Text>Awesome 🎉</Text>
+				{children}
 			</BottomSheetView>
-		</BottomSheet>
+		</MapBottomSheetProvider>
 	);
 }
 
 const styles = StyleSheet.create({
 	contentContainer: {
 		flex: 1,
-		padding: 36,
 		alignItems: "center",
 	},
 });

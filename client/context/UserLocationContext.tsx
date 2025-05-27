@@ -1,11 +1,4 @@
-import {
-	createContext,
-	useContext,
-	ReactNode,
-	useEffect,
-	Dispatch,
-	useReducer,
-} from "react";
+import { createContext, useContext, useEffect, useReducer } from "react";
 import * as Location from "expo-location";
 
 export type Coords = [number, number];
@@ -23,7 +16,7 @@ type UserLocationAction = {
 
 type UserLocationContextProps = {
 	userLoc: UserLocation;
-	dispatch: Dispatch<UserLocationAction>;
+	dispatch: React.Dispatch<UserLocationAction>;
 };
 
 const UserLocationContext = createContext<UserLocationContextProps | null>(
@@ -32,7 +25,7 @@ const UserLocationContext = createContext<UserLocationContextProps | null>(
 
 export const useUserLocationContext = () => useContext(UserLocationContext);
 
-export const userLocationReducer = (
+const userLocationReducer = (
 	state: UserLocation,
 	action: UserLocationAction
 ): UserLocation => {
@@ -44,7 +37,7 @@ export const userLocationReducer = (
 	}
 };
 
-export const UserLocationProvider: React.FC<{ children: ReactNode }> = ({
+export const UserLocationProvider: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
 	const [userLoc, dispatch] = useReducer(userLocationReducer, {

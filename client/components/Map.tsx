@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet } from "react-native";
 import {
 	Camera,
 	MapView,
@@ -12,11 +12,22 @@ import {
 import { Coords, useUserLocationContext } from "@/context/UserLocationContext";
 import Filter from "./Filter";
 import FindUserPressable from "./FindUserPressable";
+import Pin from "./Pin";
 import MapBottomSheet from "./MapBottomSheet";
+import ConfirmUploadSpot from "./ConfirmUploadSpot";
+
+export type PinInfo = {
+	coords: Coords;
+	show: boolean;
+};
 
 export default function Map() {
 	const { userLoc, dispatch } = useUserLocationContext()!;
 	const [followUser, setFollowUser] = useState(true);
+	const [pin, setPin] = useState<PinInfo>({
+		coords: [0, 0],
+		show: false,
+	});
 	const mapViewRef = useRef<MapViewRef | null>(null);
 	const cameraRef = useRef<CameraRef | null>(null);
 
@@ -33,12 +44,21 @@ export default function Map() {
 		});
 	};
 
+	// GeoJSON.Feature type is not up to date for some reason
+	// using any for now :(
+	const handleMapPress = (e: any) => {
+		if (pin.show === false) {
+			console.log(e.geometry.coordinates);
+			setPin({ coords: e.geometry.coordinates, show: true });
+			return;
+		}
+		setPin({ ...pin, show: false });
+		return;
+	};
+
 	return (
 		<>
 			<Filter />
-			{userLoc.enabled && userLoc.coords !== null && (
-				<FindUserPressable setFollowUser={setFollowUser} />
-			)}
 			<MapView
 				ref={mapViewRef}
 				style={styles.map}
@@ -48,6 +68,7 @@ export default function Map() {
 				compassViewMargins={{ x: 12, y: 12 }}
 				compassViewPosition={2}
 				localizeLabels={true}
+				onPress={(e) => handleMapPress(e)}
 			>
 				<Camera
 					ref={cameraRef}
@@ -69,13 +90,19 @@ export default function Map() {
 						}
 					}}
 				/>
+				<Pin pin={pin} />
 				<UserLocation
 					visible
 					showsUserHeadingIndicator
 					onUpdate={(loc: Location) => handleUserLocUpdate(loc)}
 				/>
 			</MapView>
-			<MapBottomSheet />
+			{userLoc.enabled && userLoc.coords !== null && (
+				<FindUserPressable setFollowUser={setFollowUser} />
+			)}
+			<MapBottomSheet>
+				<ConfirmUploadSpot />
+			</MapBottomSheet>
 		</>
 	);
 }
