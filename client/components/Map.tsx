@@ -101,7 +101,7 @@ export default function Map() {
 				<FindUserPressable setFollowUser={setFollowUser} />
 			)}
 			<MapBottomSheet>
-				<ConfirmUploadSpot pin={pin} />
+				<ConfirmUploadSpot pin={pin} setPin={setPin} />
 			</MapBottomSheet>
 		</>
 	);

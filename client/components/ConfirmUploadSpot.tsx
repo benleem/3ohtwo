@@ -7,17 +7,26 @@ import { use, useEffect } from "react";
 
 type ConfirmUploadSpotProps = {
 	pin: PinInfo;
+	setPin: React.Dispatch<React.SetStateAction<PinInfo>>;
 };
 
-export default function ConfirmUploadSpot({ pin }: ConfirmUploadSpotProps) {
+export default function ConfirmUploadSpot({
+	pin,
+	setPin,
+}: ConfirmUploadSpotProps) {
 	const { bottomSheetRef } = useMapBottomSheetContext()!;
 
 	useEffect(() => {
 		if (pin.show) {
 			bottomSheetRef.current?.expand();
+			return;
 		}
 		bottomSheetRef.current?.close();
 	}, [pin]);
+
+	const handleClose = () => {
+		setPin({ ...pin, show: false });
+	};
 
 	return (
 		<View style={styles.confirmContainer}>
@@ -33,10 +42,7 @@ export default function ConfirmUploadSpot({ pin }: ConfirmUploadSpotProps) {
 				>
 					<Feather name="check" size={18} color="black" />
 				</Link>
-				<Pressable
-					style={styles.confirmButton}
-					onPress={() => bottomSheetRef.current?.close()}
-				>
+				<Pressable style={styles.confirmButton} onPress={handleClose}>
 					<Feather name="x" size={18} color="black" />
 				</Pressable>
 			</View>
