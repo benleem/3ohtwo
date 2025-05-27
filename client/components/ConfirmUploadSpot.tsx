@@ -2,9 +2,22 @@ import { StyleSheet, Text, View, Pressable } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
 import { Link } from "expo-router";
 import { useMapBottomSheetContext } from "@/context/BottomSheetContext";
+import { PinInfo } from "./Map";
+import { use, useEffect } from "react";
 
-export default function ConfirmUploadSpot() {
+type ConfirmUploadSpotProps = {
+	pin: PinInfo;
+};
+
+export default function ConfirmUploadSpot({ pin }: ConfirmUploadSpotProps) {
 	const { bottomSheetRef } = useMapBottomSheetContext()!;
+
+	useEffect(() => {
+		if (pin.show) {
+			bottomSheetRef.current?.expand();
+		}
+		bottomSheetRef.current?.close();
+	}, [pin]);
 
 	return (
 		<View style={styles.confirmContainer}>
@@ -14,7 +27,7 @@ export default function ConfirmUploadSpot() {
 					style={styles.confirmButton}
 					href={{
 						pathname: "/upload",
-						params: { location: [40, 100] },
+						params: { location: pin.coords },
 					}}
 					suppressHighlighting
 				>

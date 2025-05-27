@@ -48,7 +48,6 @@ export default function Map() {
 	// using any for now :(
 	const handleMapPress = (e: any) => {
 		if (pin.show === false) {
-			console.log(e.geometry.coordinates);
 			setPin({ coords: e.geometry.coordinates, show: true });
 			return;
 		}
@@ -95,13 +94,14 @@ export default function Map() {
 					visible
 					showsUserHeadingIndicator
 					onUpdate={(loc: Location) => handleUserLocUpdate(loc)}
+					onPress={() => setFollowUser(true)}
 				/>
 			</MapView>
 			{userLoc.enabled && userLoc.coords !== null && (
 				<FindUserPressable setFollowUser={setFollowUser} />
 			)}
 			<MapBottomSheet>
-				<ConfirmUploadSpot />
+				<ConfirmUploadSpot pin={pin} />
 			</MapBottomSheet>
 		</>
 	);

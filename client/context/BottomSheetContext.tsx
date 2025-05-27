@@ -16,17 +16,17 @@ export const MapBottomSheetProvider: React.FC<{
 }> = ({ children }) => {
 	const bottomSheetRef = useRef<BottomSheet>(null);
 
-	const handleSheetChanges = useCallback((index: number) => {
-		console.log("handleSheetChanges", index);
-	}, []);
+	// const handleSheetChanges = useCallback((index: number) => {
+	// 	console.log("handleSheetChanges", index);
+	// }, []);
 
 	return (
 		<MapBottomSheetContext.Provider value={{ bottomSheetRef }}>
 			<BottomSheet
 				handleStyle={{ paddingVertical: 12 }}
 				ref={bottomSheetRef}
-				onChange={handleSheetChanges}
-				// index={-1}
+				// onChange={handleSheetChanges}
+				index={-1}
 			>
 				{children}
 			</BottomSheet>
