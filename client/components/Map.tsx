@@ -52,7 +52,6 @@ export default function Map() {
 			return;
 		}
 		setPin({ ...pin, show: false });
-		return;
 	};
 
 	return (
