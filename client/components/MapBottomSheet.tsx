@@ -1,7 +1,6 @@
 import React from "react";
 import { StyleSheet } from "react-native";
-import { BottomSheetView } from "@gorhom/bottom-sheet";
-import { MapBottomSheetProvider } from "@/context/BottomSheetContext";
+import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 
 type MapBottomSheetProps = {
 	children: React.ReactNode;
@@ -9,11 +8,17 @@ type MapBottomSheetProps = {
 
 export default function MapBottomSheet({ children }: MapBottomSheetProps) {
 	return (
-		<MapBottomSheetProvider>
+		<BottomSheet
+			// ref={bottomSheetRef}
+			handleStyle={{ paddingVertical: 12 }}
+			// onChange={handleSheetChanges}
+			// enablePanDownToClose
+			index={-1}
+		>
 			<BottomSheetView style={styles.contentContainer}>
 				{children}
 			</BottomSheetView>
-		</MapBottomSheetProvider>
+		</BottomSheet>
 	);
 }
 
