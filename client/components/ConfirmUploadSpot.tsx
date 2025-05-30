@@ -90,7 +90,6 @@ const styles = StyleSheet.create({
 		borderRadius: 18,
 	},
 	distanceText: {
-		height: 12,
 		color: "gray",
 		display: "flex",
 		fontSize: 12,

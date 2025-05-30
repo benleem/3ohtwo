@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import {
 	Camera,
 	MapView,
@@ -90,10 +90,11 @@ export default function Map() {
 				/>
 				<Pin pin={pin} />
 				<UserLocation
+					// renderMode=""
+					// androidRenderMode="compass"
 					visible
-					showsUserHeadingIndicator
+					showsUserHeadingIndicator={true}
 					onUpdate={(loc: Location) => handleUserLocUpdate(loc)}
-					onPress={() => setFollowUser(true)}
 				/>
 			</MapView>
 			{userLoc.enabled && userLoc.coords !== null && (
