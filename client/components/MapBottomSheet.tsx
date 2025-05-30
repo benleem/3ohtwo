@@ -1,28 +1,44 @@
-import React, { useCallback, useMemo, useRef } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import React, { useRef } from "react";
+import { StyleSheet } from "react-native";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 
-export default function MapBottomSheet() {
-	const bottomSheetRef = useRef<BottomSheet>(null);
+type MapBottomSheetProps = {
+	children: React.ReactNode;
+};
 
-	const handleSheetChanges = useCallback((index: number) => {
-		console.log("handleSheetChanges", index);
-	}, []);
+export default function MapBottomSheet({ children }: MapBottomSheetProps) {
+	// const bottomSheetRef = useRef<BottomSheet | null>(null);
+	// const handleSheetChanges = (index: number) => {
+	// };
 
 	return (
-		<BottomSheet ref={bottomSheetRef}>
+		<BottomSheet
+			// ref={bottomSheetRef}
+			style={styles.bottomSheetContainer}
+			handleStyle={{ paddingVertical: 12 }}
+			// enablePanDownToClose
+			// onChange={(index) => handleSheetChanges(index)}
+			index={-1}
+		>
 			<BottomSheetView style={styles.contentContainer}>
-				<Text>Awesome 🎉</Text>
+				{children}
 			</BottomSheetView>
 		</BottomSheet>
 	);
 }
 
 const styles = StyleSheet.create({
+	bottomSheetContainer: {
+		shadowColor: "#000",
+		shadowOffset: {
+			width: 0,
+			height: -1,
+		},
+		shadowOpacity: 0.4,
+		shadowRadius: 5,
+	},
 	contentContainer: {
 		flex: 1,
-		padding: 36,
 		alignItems: "center",
 	},
 });
