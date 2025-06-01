@@ -1,11 +1,11 @@
-import { useState } from "react";
-import { Button, Image, View, StyleSheet, Text, Pressable } from "react-native";
+import { Image, View, StyleSheet, Pressable } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Feather from "@expo/vector-icons/Feather";
+import { useUploadSpotContext } from "@/context/UploadSpotContext";
 
 export default function SpotImagePicker() {
-	const [image, setImage] = useState<string | null>(null);
+	const { spot, spotDispatch } = useUploadSpotContext()!;
 
 	const takeImage = () => {};
 
@@ -18,11 +18,27 @@ export default function SpotImagePicker() {
 			quality: 1,
 		});
 
-		console.log(result);
+		// console.log(result);
 
 		if (!result.canceled) {
-			setImage(result.assets[0].uri);
+			spotDispatch({
+				type: "update_spot",
+				payload: {
+					...spot,
+					image: result.assets[0].uri,
+				},
+			});
 		}
+	};
+
+	const clearImage = () => {
+		spotDispatch({
+			type: "update_spot",
+			payload: {
+				...spot,
+				image: "",
+			},
+		});
 	};
 
 	return (
@@ -30,11 +46,11 @@ export default function SpotImagePicker() {
 			<View
 				style={[
 					styles.imageContainer,
-					image ? { borderWidth: 0 } : { borderWidth: 2 },
+					spot.image ? { borderWidth: 0 } : { borderWidth: 2 },
 				]}
 			>
-				{image ? (
-					<Image source={{ uri: image }} style={styles.image} />
+				{spot.image ? (
+					<Image source={{ uri: spot.image }} style={styles.image} />
 				) : (
 					<FontAwesome name="picture-o" size={128} color="gray" />
 				)}
@@ -43,8 +59,8 @@ export default function SpotImagePicker() {
 				<Pressable style={styles.button} onPress={pickImage}>
 					<Feather name="plus" size={24} color="black" />
 				</Pressable>
-				{image && (
-					<Pressable style={styles.button} onPress={() => setImage(null)}>
+				{spot.image && (
+					<Pressable style={styles.button} onPress={clearImage}>
 						<Feather name="x" size={24} color="black" />
 					</Pressable>
 				)}

@@ -16,7 +16,7 @@ type UserLocationAction = {
 
 type UserLocationContextProps = {
 	userLoc: UserLocation;
-	dispatch: React.Dispatch<UserLocationAction>;
+	locDispatch: React.Dispatch<UserLocationAction>;
 };
 
 const UserLocationContext = createContext<UserLocationContextProps | null>(
@@ -40,7 +40,7 @@ const userLocationReducer = (
 export const UserLocationProvider: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
-	const [userLoc, dispatch] = useReducer(userLocationReducer, {
+	const [userLoc, locDispatch] = useReducer(userLocationReducer, {
 		enabled: false,
 		coords: null,
 		zoom: 3,
@@ -50,13 +50,13 @@ export const UserLocationProvider: React.FC<{ children: React.ReactNode }> = ({
 		async function getCurrentLocation() {
 			let { status } = await Location.requestForegroundPermissionsAsync();
 			if (status !== "granted") {
-				dispatch({
+				locDispatch({
 					type: "update_location",
 					payload: { ...userLoc, enabled: false },
 				});
 				return;
 			}
-			dispatch({
+			locDispatch({
 				type: "update_location",
 				payload: { ...userLoc, enabled: true },
 			});
@@ -65,7 +65,7 @@ export const UserLocationProvider: React.FC<{ children: React.ReactNode }> = ({
 	}, []);
 
 	return (
-		<UserLocationContext.Provider value={{ userLoc, dispatch }}>
+		<UserLocationContext.Provider value={{ userLoc, locDispatch }}>
 			{children}
 		</UserLocationContext.Provider>
 	);

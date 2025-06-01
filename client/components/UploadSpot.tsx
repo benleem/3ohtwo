@@ -12,34 +12,65 @@ import {
 	SafeAreaView,
 	useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { Dispatch, SetStateAction, useState } from "react";
-import { useLocalSearchParams, Link } from "expo-router";
-import { Coords } from "@/context/UserLocationContext";
+import { useEffect, useState } from "react";
+import { Link } from "expo-router";
+import { Category, useUploadSpotContext } from "@/context/UploadSpotContext";
 import SpotImagePicker from "./SpotImagePicker";
 
-enum Category {
-	Read = "read",
-	Chill = "chill",
-	Scenic = "scenic",
-	Food = "food",
-	Drinks = "drinks",
-	Coffee = "coffee",
-	Hiking = "hiking",
+type CategoryButtonProps = {
+	item: Category;
+};
+
+function CategoryButton({ item }: CategoryButtonProps) {
+	const { spot, spotDispatch } = useUploadSpotContext()!;
+	const [selected, setSelected] = useState<boolean>(false);
+
+	const handleToggle = (item: Category) => {
+		if (spot.categories.includes(item)) {
+			spotDispatch({
+				type: "update_spot",
+				payload: {
+					...spot,
+					categories: spot.categories.filter((category) => {
+						return category !== item;
+					}),
+				},
+			});
+			return;
+		}
+		spotDispatch({
+			type: "update_spot",
+			payload: {
+				...spot,
+				categories: [...spot.categories, item],
+			},
+		});
+	};
+
+	useEffect(() => {
+		if (spot.categories.includes(item)) {
+			setSelected(true);
+			return;
+		}
+		setSelected(false);
+	}, [spot]);
+
+	return (
+		<Pressable
+			style={[
+				styles.categoryButton,
+				selected ? { borderColor: "blue" } : { borderColor: "black" },
+			]}
+			onPress={() => handleToggle(item)}
+		>
+			<Text style={[selected ? { color: "blue" } : { color: "black " }]}>
+				{item}
+			</Text>
+		</Pressable>
+	);
 }
 
-type SpotInputs = {
-	name: string;
-	categories: Category[];
-	coords: Coords | undefined;
-	public: boolean;
-	image: string;
-};
-
-type CategoryButtonsProps = {
-	setInputs: Dispatch<SetStateAction<SpotInputs>>;
-};
-
-function CategoryButtons({ setInputs }: CategoryButtonsProps) {
+function CategoryButtons() {
 	const iterateCategories = () => {
 		let categories: Category[] = [];
 		const keys = Object.keys(Category);
@@ -53,11 +84,7 @@ function CategoryButtons({ setInputs }: CategoryButtonsProps) {
 		<FlatList
 			contentContainerStyle={styles.flatListContainer}
 			data={iterateCategories()}
-			renderItem={({ item }) => (
-				<Pressable style={styles.categoryButton}>
-					<Text>{item}</Text>
-				</Pressable>
-			)}
+			renderItem={({ item }) => <CategoryButton item={item} />}
 			// need to generate actually uuid at some point
 			keyExtractor={(item, index) => `${item}-${index}`}
 			horizontal
@@ -68,10 +95,9 @@ function CategoryButtons({ setInputs }: CategoryButtonsProps) {
 
 function FormButtons() {
 	const { bottom } = useSafeAreaInsets();
-	const { location } = useLocalSearchParams();
 
 	const handleSubmit = () => {
-		console.log(location);
+		console.log("Submitted");
 	};
 
 	return (
@@ -96,16 +122,21 @@ function FormButtons() {
 }
 
 export default function UploadSpot() {
-	const [inputs, setInputs] = useState<SpotInputs>({
-		public: false,
-		coords: undefined,
-		name: "",
-		categories: [],
-		image: "",
-	});
+	const { spot, spotDispatch } = useUploadSpotContext()!;
+
 	// const [switchEnabled, setSwitchEnabled] = useState(false);
 	// const toggleSwitch = () =>
 	// 	setSwitchEnabled((previousState) => !previousState);
+
+	const updateName = (text: string) => {
+		spotDispatch({
+			type: "update_spot",
+			payload: {
+				...spot,
+				name: text,
+			},
+		});
+	};
 
 	return (
 		<>
@@ -116,10 +147,10 @@ export default function UploadSpot() {
 						style={styles.textInput}
 						placeholderTextColor={"gray"}
 						placeholder="Spot name"
-						onChangeText={(text) => setInputs({ ...inputs, name: text })}
-						value={inputs.name}
+						onChangeText={(text) => updateName(text)}
+						value={spot.name}
 					/>
-					<CategoryButtons setInputs={setInputs} />
+					<CategoryButtons />
 					{/* <View style={styles.switchContainer}>
 					<Text>Public?</Text>
 					<Switch

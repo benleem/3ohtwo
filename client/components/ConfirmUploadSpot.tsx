@@ -46,7 +46,6 @@ export default function ConfirmUploadSpot({
 						style={styles.confirmButton}
 						href={{
 							pathname: "/upload",
-							params: { location: pin.coords },
 						}}
 						suppressHighlighting
 					>

@@ -15,6 +15,7 @@ import FindUserPressable from "./FindUserPressable";
 import Pin from "./Pin";
 import MapBottomSheet from "./MapBottomSheet";
 import ConfirmUploadSpot from "./ConfirmUploadSpot";
+import { useUploadSpotContext } from "@/context/UploadSpotContext";
 
 export type PinInfo = {
 	coords: Coords;
@@ -22,7 +23,8 @@ export type PinInfo = {
 };
 
 export default function Map() {
-	const { userLoc, dispatch } = useUserLocationContext()!;
+	const { userLoc, locDispatch } = useUserLocationContext()!;
+	const { spot, spotDispatch } = useUploadSpotContext()!;
 	const [followUser, setFollowUser] = useState(true);
 	const [pin, setPin] = useState<PinInfo>({
 		coords: [0, 0],
@@ -34,7 +36,7 @@ export default function Map() {
 	const handleUserLocUpdate = (loc: Location) => {
 		let zoom = 17;
 		let coords: Coords = [loc.coords.longitude, loc.coords.latitude];
-		dispatch({
+		locDispatch({
 			type: "update_location",
 			payload: {
 				enabled: true,
@@ -49,6 +51,12 @@ export default function Map() {
 	const handleMapPress = (e: any) => {
 		if (pin.show === false) {
 			setPin({ coords: e.geometry.coordinates, show: true });
+			spotDispatch({
+				type: "clear_spot",
+				payload: {
+					...spot,
+				},
+			});
 			return;
 		}
 		setPin({ ...pin, show: false });
