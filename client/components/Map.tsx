@@ -51,15 +51,15 @@ export default function Map() {
 	const handleMapPress = (e: any) => {
 		if (pin.show === false) {
 			setPin({ coords: e.geometry.coordinates, show: true });
-			spotDispatch({
-				type: "clear_spot",
-				payload: {
-					...spot,
-				},
-			});
 			return;
 		}
 		setPin({ ...pin, show: false });
+		spotDispatch({
+			type: "clear_spot",
+			payload: {
+				...spot,
+			},
+		});
 	};
 
 	return (

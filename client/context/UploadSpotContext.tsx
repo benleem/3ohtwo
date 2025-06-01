@@ -12,11 +12,19 @@ export enum Category {
 }
 
 type Spot = {
+	public: boolean;
+	coords: Coords | undefined;
 	name: string;
 	categories: Category[];
-	coords: Coords | undefined;
-	public: boolean;
 	image: string;
+};
+
+const DEFAULT_SPOT: Spot = {
+	public: false,
+	coords: undefined,
+	name: "",
+	categories: [],
+	image: "",
 };
 
 type UploadSpotAction = {
@@ -38,13 +46,7 @@ const uploadSpotReducer = (state: Spot, action: UploadSpotAction): Spot => {
 		case "update_spot":
 			return action.payload;
 		case "clear_spot":
-			return {
-				public: false,
-				coords: undefined,
-				name: "",
-				categories: [],
-				image: "",
-			};
+			return DEFAULT_SPOT;
 		default:
 			return state;
 	}
@@ -53,13 +55,7 @@ const uploadSpotReducer = (state: Spot, action: UploadSpotAction): Spot => {
 export const UploadSpotProvider: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
-	const [spot, spotDispatch] = useReducer(uploadSpotReducer, {
-		public: false,
-		coords: undefined,
-		name: "",
-		categories: [],
-		image: "",
-	});
+	const [spot, spotDispatch] = useReducer(uploadSpotReducer, DEFAULT_SPOT);
 
 	useEffect(() => {
 		console.log(spot);
