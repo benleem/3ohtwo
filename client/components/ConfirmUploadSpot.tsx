@@ -1,11 +1,14 @@
 import { StyleSheet, Text, View, Pressable } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
 import { Link } from "expo-router";
-import { PinInfo } from "./Map";
 import { useEffect, useMemo, useState } from "react";
 import { useBottomSheet } from "@gorhom/bottom-sheet";
-import { Coords, useUserLocationContext } from "@/context/UserLocationContext";
+import { useUserLocationContext } from "@/context/UserLocationContext";
 import { haversine } from "@/helpers/utils";
+import { Colors } from "@/constants/Colors";
+import { PinInfo } from "./Pin";
+import * as Location from "expo-location";
+import { useUploadSpotContext } from "@/context/UploadSpotContext";
 
 type ConfirmUploadSpotProps = {
 	pin: PinInfo;
@@ -16,14 +19,39 @@ export default function ConfirmUploadSpot({
 	pin,
 	setPin,
 }: ConfirmUploadSpotProps) {
-	const { userLoc } = useUserLocationContext()!;
+	const { spot, spotDispatch } = useUploadSpotContext()!;
 	const { close, expand } = useBottomSheet()!;
+	const [locationSub, setLocationSub] =
+		useState<Location.LocationObject | null>(null);
 	const pinDistance = useMemo(() => {
-		if (userLoc.enabled && userLoc.coords && pin.show) {
-			return haversine(userLoc.coords, pin.coords, true);
+		if (locationSub !== null && pin.show) {
+			return haversine(
+				[locationSub.coords.longitude, locationSub.coords.latitude],
+				pin.coords,
+				true
+			);
 		}
-		return "";
-	}, [pin, userLoc]);
+		return "Can't find user";
+	}, [pin, locationSub]);
+
+	const handleClose = () => {
+		setPin({ ...pin, show: false });
+		spotDispatch({
+			type: "clear_spot",
+			payload: {
+				...spot,
+			},
+		});
+	};
+
+	function subCallback(location: Location.LocationObject) {
+		console.log(location);
+		setLocationSub(location);
+	}
+
+	function subErrorHandler(error: string) {
+		console.log(error);
+	}
 
 	useEffect(() => {
 		if (pin.show) {
@@ -33,9 +61,20 @@ export default function ConfirmUploadSpot({
 		close();
 	}, [pin]);
 
-	const handleClose = () => {
-		setPin({ ...pin, show: false });
-	};
+	useEffect(() => {
+		(async () => {
+			const subscription = await Location.watchPositionAsync(
+				{
+					accuracy: Location.Accuracy.Highest,
+					timeInterval: 1000,
+					distanceInterval: 1,
+				},
+				subCallback,
+				subErrorHandler
+			);
+			return () => subscription.remove();
+		})();
+	}, []);
 
 	return (
 		<View style={styles.confirmWrapper}>
@@ -85,7 +124,7 @@ const styles = StyleSheet.create({
 	},
 	confirmButton: {
 		padding: 4,
-		backgroundColor: "gray",
+		backgroundColor: Colors.lightGray,
 		borderRadius: 18,
 	},
 	distanceText: {

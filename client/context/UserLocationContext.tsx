@@ -6,7 +6,12 @@ export type Coords = [number, number];
 type UserLocation = {
 	enabled: boolean;
 	coords: Coords | null;
-	zoom: number;
+};
+
+const DEFAULT_USER_LOCATION = {
+	enabled: false,
+	follow: false,
+	coords: null,
 };
 
 type UserLocationAction = {
@@ -40,11 +45,10 @@ const userLocationReducer = (
 export const UserLocationProvider: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
-	const [userLoc, locDispatch] = useReducer(userLocationReducer, {
-		enabled: false,
-		coords: null,
-		zoom: 3,
-	});
+	const [userLoc, locDispatch] = useReducer(
+		userLocationReducer,
+		DEFAULT_USER_LOCATION
+	);
 
 	useEffect(() => {
 		async function getCurrentLocation() {
@@ -52,17 +56,25 @@ export const UserLocationProvider: React.FC<{ children: React.ReactNode }> = ({
 			if (status !== "granted") {
 				locDispatch({
 					type: "update_location",
-					payload: { ...userLoc, enabled: false },
+					payload: DEFAULT_USER_LOCATION,
 				});
 				return;
 			}
+			let location = await Location.getCurrentPositionAsync({});
 			locDispatch({
 				type: "update_location",
-				payload: { ...userLoc, enabled: true },
+				payload: {
+					enabled: true,
+					coords: [location.coords.longitude, location.coords.latitude],
+				},
 			});
 		}
 		getCurrentLocation();
 	}, []);
+
+	// useEffect(() => {
+	// 	console.log(userLoc);
+	// }, [userLoc]);
 
 	return (
 		<UserLocationContext.Provider value={{ userLoc, locDispatch }}>

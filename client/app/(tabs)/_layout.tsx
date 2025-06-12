@@ -1,5 +1,7 @@
+import { Colors } from "@/constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
 import { Tabs, useSegments } from "expo-router";
+import { View } from "react-native";
 
 export default function TabLayout() {
 	const segment = useSegments();
@@ -11,12 +13,18 @@ export default function TabLayout() {
 	return (
 		<Tabs
 			screenOptions={{
-				tabBarActiveTintColor: "blue",
+				tabBarActiveTintColor: Colors.babyBlue,
 				headerShown: false,
 				tabBarShowLabel: true,
 				tabBarStyle: {
 					// check if the current page is in the list then hide the tab bar
 					display: pagesToHideTabBar.includes(page) ? "none" : "flex",
+				},
+				// tabBarPosition: "right",
+				// tabBarVariant: "material",
+				tabBarIconStyle: {
+					// padding: 5,
+					// backgroundColor: "red",
 				},
 			}}
 		>
@@ -25,7 +33,7 @@ export default function TabLayout() {
 				options={{
 					title: "Spots",
 					tabBarIcon: ({ color }) => (
-						<FontAwesome size={28} name="map" color={color} />
+						<FontAwesome size={24} name="map" color={color} />
 					),
 				}}
 			/>
@@ -40,7 +48,7 @@ export default function TabLayout() {
 				options={{
 					title: "Settings",
 					tabBarIcon: ({ color }) => (
-						<FontAwesome size={28} name="cog" color={color} />
+						<FontAwesome size={24} name="cog" color={color} />
 					),
 				}}
 			/>

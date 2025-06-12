@@ -1,5 +1,9 @@
 import { ShapeSource, SymbolLayer } from "@maplibre/maplibre-react-native";
-import { PinInfo } from "./Map";
+
+export type PinInfo = {
+	coords: [number, number];
+	show: boolean;
+};
 
 type PinProps = {
 	pin: PinInfo;
