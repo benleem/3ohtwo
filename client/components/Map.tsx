@@ -1,23 +1,15 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { Platform, StyleSheet } from "react-native";
 import {
 	Camera,
 	MapView,
 	UserLocation,
-	Location,
 	CameraRef,
 	UserTrackingMode,
 	MapViewRef,
-	UserLocationRef,
 } from "@maplibre/maplibre-react-native";
-import { Coords, useUserLocationContext } from "@/context/UserLocationContext";
-import Filter from "./Filter";
-import FindUserPressable from "./FindUserPressable";
 import Pin, { PinInfo } from "./Pin";
-import MapBottomSheet from "./MapBottomSheet";
-import ConfirmUploadSpot from "./ConfirmUploadSpot";
-import { useUploadSpotContext } from "@/context/UploadSpotContext";
-import { requestLocation } from "@/hooks/useLocation";
+import { useSpotContext } from "@/context/SpotsContext";
 import { LocationObject } from "expo-location";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -37,7 +29,7 @@ export default function Map({
 	setPin,
 }: MapProps) {
 	const { top, bottom } = useSafeAreaInsets();
-	const { spot, spotDispatch } = useUploadSpotContext()!;
+	const { spot, spotDispatch } = useSpotContext()!;
 	const mapViewRef = useRef<MapViewRef | null>(null);
 	const cameraRef = useRef<CameraRef | null>(null);
 
@@ -79,12 +71,6 @@ export default function Map({
 		>
 			<Camera
 				ref={cameraRef}
-				// centerCoordinate={
-				// 	location !== null
-				// 		? [location?.coords.longitude, location?.coords.latitude]
-				// 		: [-100, 40]
-				// }
-				// zoomLevel={location ? 17 : 3}
 				defaultSettings={
 					location === null
 						? {

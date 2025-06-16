@@ -3,12 +3,11 @@ import Feather from "@expo/vector-icons/Feather";
 import { Link } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { useBottomSheet } from "@gorhom/bottom-sheet";
-import { useUserLocationContext } from "@/context/UserLocationContext";
 import { haversine } from "@/helpers/utils";
 import { Colors } from "@/constants/Colors";
 import { PinInfo } from "./Pin";
 import * as Location from "expo-location";
-import { useUploadSpotContext } from "@/context/UploadSpotContext";
+import { useSpotContext } from "@/context/SpotsContext";
 
 type ConfirmUploadSpotProps = {
 	pin: PinInfo;
@@ -19,7 +18,7 @@ export default function ConfirmUploadSpot({
 	pin,
 	setPin,
 }: ConfirmUploadSpotProps) {
-	const { spot, spotDispatch } = useUploadSpotContext()!;
+	const { spot, spotDispatch } = useSpotContext()!;
 	const { close, expand } = useBottomSheet()!;
 	const [locationSub, setLocationSub] =
 		useState<Location.LocationObject | null>(null);

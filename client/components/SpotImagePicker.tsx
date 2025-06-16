@@ -2,7 +2,7 @@ import { Image, View, StyleSheet, Pressable } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Feather from "@expo/vector-icons/Feather";
-import { useUploadSpotContext } from "@/context/UploadSpotContext";
+import { useUploadSpotContext } from "@/context/SpotsContext";
 
 export default function SpotImagePicker() {
 	const { spot, spotDispatch } = useUploadSpotContext()!;

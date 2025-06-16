@@ -14,7 +14,7 @@ import {
 } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
 import { Link } from "expo-router";
-import { Category, useUploadSpotContext } from "@/context/UploadSpotContext";
+import { Category, useSpotContext } from "@/context/SpotsContext";
 import SpotImagePicker from "./SpotImagePicker";
 
 type CategoryButtonProps = {
@@ -22,7 +22,7 @@ type CategoryButtonProps = {
 };
 
 function CategoryButton({ item }: CategoryButtonProps) {
-	const { spot, spotDispatch } = useUploadSpotContext()!;
+	const { spot, spotDispatch } = useSpotContext()!;
 	const [selected, setSelected] = useState<boolean>(false);
 
 	const handleToggle = (item: Category) => {
@@ -122,7 +122,7 @@ function FormButtons() {
 }
 
 export default function UploadSpot() {
-	const { spot, spotDispatch } = useUploadSpotContext()!;
+	const { spot, spotDispatch } = useSpotContext()!;
 
 	// const [switchEnabled, setSwitchEnabled] = useState(false);
 	// const toggleSwitch = () =>

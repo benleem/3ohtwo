@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useReducer } from "react";
-import { Coords } from "./UserLocationContext";
 
 export enum Category {
 	Read = "read",
@@ -10,6 +9,8 @@ export enum Category {
 	Coffee = "coffee",
 	Hiking = "hiking",
 }
+
+export type Coords = [number, number];
 
 type Spot = {
 	public: boolean;
@@ -27,21 +28,21 @@ const DEFAULT_SPOT: Spot = {
 	image: "",
 };
 
-type UploadSpotAction = {
+type SpotAction = {
 	type: "update_spot" | "clear_spot";
 	payload: Spot;
 };
 
-type UploadSpotContextProps = {
+type SpotContextProps = {
 	spot: Spot;
-	spotDispatch: React.Dispatch<UploadSpotAction>;
+	spotDispatch: React.Dispatch<SpotAction>;
 };
 
-const UploadSpotContext = createContext<UploadSpotContextProps | null>(null);
+const SpotContext = createContext<SpotContextProps | null>(null);
 
-export const useUploadSpotContext = () => useContext(UploadSpotContext);
+export const useSpotContext = () => useContext(SpotContext);
 
-const uploadSpotReducer = (state: Spot, action: UploadSpotAction): Spot => {
+const spotReducer = (state: Spot, action: SpotAction): Spot => {
 	switch (action.type) {
 		case "update_spot":
 			return action.payload;
@@ -52,18 +53,18 @@ const uploadSpotReducer = (state: Spot, action: UploadSpotAction): Spot => {
 	}
 };
 
-export const UploadSpotProvider: React.FC<{ children: React.ReactNode }> = ({
+export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
-	const [spot, spotDispatch] = useReducer(uploadSpotReducer, DEFAULT_SPOT);
+	const [spot, spotDispatch] = useReducer(spotReducer, DEFAULT_SPOT);
 
 	useEffect(() => {
 		console.log(spot);
 	}, [spot]);
 
 	return (
-		<UploadSpotContext.Provider value={{ spot, spotDispatch }}>
+		<SpotContext.Provider value={{ spot, spotDispatch }}>
 			{children}
-		</UploadSpotContext.Provider>
+		</SpotContext.Provider>
 	);
 };
