@@ -11,7 +11,7 @@ export const haversine = (pointA: Coords, pointB: Coords, imperial: boolean) => 
 	let dLat = ((pointB[1] - pointA[1]) * Math.PI) / 180.0;
 	let dLon = ((pointB[0] - pointA[0]) * Math.PI) / 180.0;
 
-	// convert to radiansa
+	// convert to radians
 	let lat1 = (pointA[1] * Math.PI) / 180.0;
 	let lat2 = (pointB[1] * Math.PI) / 180.0;
 

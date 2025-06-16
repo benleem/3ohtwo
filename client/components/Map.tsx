@@ -1,48 +1,37 @@
-import React, { useRef, useState } from "react";
-import { StyleSheet } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { Platform, StyleSheet } from "react-native";
 import {
 	Camera,
 	MapView,
 	UserLocation,
-	Location,
 	CameraRef,
 	UserTrackingMode,
 	MapViewRef,
 } from "@maplibre/maplibre-react-native";
-import { Coords, useUserLocationContext } from "@/context/UserLocationContext";
-import Filter from "./Filter";
-import FindUserPressable from "./FindUserPressable";
-import Pin from "./Pin";
-import MapBottomSheet from "./MapBottomSheet";
-import ConfirmUploadSpot from "./ConfirmUploadSpot";
+import Pin, { PinInfo } from "./Pin";
+import { useSpotContext } from "@/context/SpotsContext";
+import { LocationObject } from "expo-location";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export type PinInfo = {
-	coords: Coords;
-	show: boolean;
+type MapProps = {
+	location: LocationObject | null;
+	followUser: boolean;
+	setFollowUser: React.Dispatch<React.SetStateAction<boolean>>;
+	pin: PinInfo;
+	setPin: React.Dispatch<React.SetStateAction<PinInfo>>;
 };
 
-export default function Map() {
-	const { userLoc, dispatch } = useUserLocationContext()!;
-	const [followUser, setFollowUser] = useState(true);
-	const [pin, setPin] = useState<PinInfo>({
-		coords: [0, 0],
-		show: false,
-	});
+export default function Map({
+	location,
+	followUser,
+	setFollowUser,
+	pin,
+	setPin,
+}: MapProps) {
+	const { top, bottom } = useSafeAreaInsets();
+	const { spot, spotDispatch } = useSpotContext()!;
 	const mapViewRef = useRef<MapViewRef | null>(null);
 	const cameraRef = useRef<CameraRef | null>(null);
-
-	const handleUserLocUpdate = (loc: Location) => {
-		let zoom = 17;
-		let coords: Coords = [loc.coords.longitude, loc.coords.latitude];
-		dispatch({
-			type: "update_location",
-			payload: {
-				enabled: true,
-				coords,
-				zoom,
-			},
-		});
-	};
 
 	// GeoJSON.Feature type is not up to date for some reason
 	// using any for now :(
@@ -52,57 +41,61 @@ export default function Map() {
 			return;
 		}
 		setPin({ ...pin, show: false });
+		spotDispatch({
+			type: "clear_spot",
+			payload: {
+				...spot,
+			},
+		});
 	};
 
+	useEffect(() => {
+		console.log(location);
+	}, [location]);
+
 	return (
-		<>
-			<Filter />
-			<MapView
-				ref={mapViewRef}
-				style={styles.map}
-				mapStyle={"https://tiles.openfreemap.org/styles/liberty"}
-				attributionPosition={{ top: 0, left: 12 }}
-				compassEnabled={true}
-				compassViewMargins={{ x: 12, y: 12 }}
-				compassViewPosition={2}
-				localizeLabels={true}
-				onPress={(e) => handleMapPress(e)}
-			>
-				<Camera
-					ref={cameraRef}
-					defaultSettings={
-						!userLoc.enabled && userLoc.coords === null
-							? {
-									centerCoordinate: [-100, 40],
-									zoomLevel: userLoc.zoom,
-							  }
-							: {}
+		<MapView
+			ref={mapViewRef}
+			style={styles.map}
+			mapStyle={"https://tiles.openfreemap.org/styles/liberty"}
+			attributionPosition={
+				Platform.OS === "android"
+					? { top: top, left: 12 }
+					: { top: 0, left: 12 }
+			}
+			compassEnabled={true}
+			compassViewMargins={{ x: 12, y: 12 }}
+			compassViewPosition={2}
+			localizeLabels={true}
+			onPress={(e) => handleMapPress(e)}
+		>
+			<Camera
+				ref={cameraRef}
+				defaultSettings={
+					location === null
+						? {
+								centerCoordinate: [-100, 40],
+								zoomLevel: 3,
+						  }
+						: {
+								// centerCoordinate: [
+								// 	location.coords.longitude,
+								// 	location.coords.latitude,
+								// ],
+								// zoomLevel: 17,
+						  }
+				}
+				followUserLocation={location !== null ? followUser : false}
+				followUserMode={UserTrackingMode.FollowWithHeading}
+				onUserTrackingModeChange={(e) => {
+					if (!e.nativeEvent.payload.followUserLocation) {
+						setFollowUser(false);
 					}
-					followUserLocation={
-						userLoc.enabled && userLoc.coords !== null ? followUser : false
-					}
-					followUserMode={UserTrackingMode.FollowWithCourse}
-					onUserTrackingModeChange={(e) => {
-						if (!e.nativeEvent.payload.followUserLocation) {
-							setFollowUser(false);
-						}
-					}}
-				/>
-				<Pin pin={pin} />
-				<UserLocation
-					visible
-					showsUserHeadingIndicator
-					onUpdate={(loc: Location) => handleUserLocUpdate(loc)}
-					onPress={() => setFollowUser(true)}
-				/>
-			</MapView>
-			{userLoc.enabled && userLoc.coords !== null && (
-				<FindUserPressable setFollowUser={setFollowUser} />
-			)}
-			<MapBottomSheet>
-				<ConfirmUploadSpot pin={pin} setPin={setPin} />
-			</MapBottomSheet>
-		</>
+				}}
+			/>
+			<Pin pin={pin} />
+			<UserLocation visible />
+		</MapView>
 	);
 }
 
