@@ -2,10 +2,10 @@ import { Image, View, StyleSheet, Pressable } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Feather from "@expo/vector-icons/Feather";
-import { useUploadSpotContext } from "@/context/SpotsContext";
+import { useSpotContext } from "@/context/SpotsContext";
 
 export default function SpotImagePicker() {
-	const { spot, spotDispatch } = useUploadSpotContext()!;
+	const { currentSpot, updateSpotForm } = useSpotContext()!;
 
 	const takeImage = () => {};
 
@@ -21,23 +21,17 @@ export default function SpotImagePicker() {
 		// console.log(result);
 
 		if (!result.canceled) {
-			spotDispatch({
-				type: "update_spot",
-				payload: {
-					...spot,
-					image: result.assets[0].uri,
-				},
+			updateSpotForm({
+				...currentSpot,
+				image: result.assets[0].uri,
 			});
 		}
 	};
 
 	const clearImage = () => {
-		spotDispatch({
-			type: "update_spot",
-			payload: {
-				...spot,
-				image: "",
-			},
+		updateSpotForm({
+			...currentSpot,
+			image: "",
 		});
 	};
 
@@ -46,11 +40,11 @@ export default function SpotImagePicker() {
 			<View
 				style={[
 					styles.imageContainer,
-					spot.image ? { borderWidth: 0 } : { borderWidth: 2 },
+					currentSpot.image ? { borderWidth: 0 } : { borderWidth: 2 },
 				]}
 			>
-				{spot.image ? (
-					<Image source={{ uri: spot.image }} style={styles.image} />
+				{currentSpot.image ? (
+					<Image source={{ uri: currentSpot.image }} style={styles.image} />
 				) : (
 					<FontAwesome name="picture-o" size={128} color="gray" />
 				)}
@@ -59,7 +53,7 @@ export default function SpotImagePicker() {
 				<Pressable style={styles.button} onPress={pickImage}>
 					<Feather name="plus" size={24} color="black" />
 				</Pressable>
-				{spot.image && (
+				{currentSpot.image && (
 					<Pressable style={styles.button} onPress={clearImage}>
 						<Feather name="x" size={24} color="black" />
 					</Pressable>

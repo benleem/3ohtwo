@@ -1,7 +1,8 @@
+import { Coords } from "@/context/SpotsContext";
 import { ShapeSource, SymbolLayer } from "@maplibre/maplibre-react-native";
 
 export type PinInfo = {
-	coords: [number, number];
+	coords: Coords;
 	show: boolean;
 };
 

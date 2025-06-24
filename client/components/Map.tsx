@@ -7,6 +7,7 @@ import {
 	CameraRef,
 	UserTrackingMode,
 	MapViewRef,
+	Location,
 } from "@maplibre/maplibre-react-native";
 import Pin, { PinInfo } from "./Pin";
 import { useSpotContext } from "@/context/SpotsContext";
@@ -15,6 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type MapProps = {
 	location: LocationObject | null;
+	setUserLoc: React.Dispatch<React.SetStateAction<Location | null>>;
 	followUser: boolean;
 	setFollowUser: React.Dispatch<React.SetStateAction<boolean>>;
 	pin: PinInfo;
@@ -23,13 +25,14 @@ type MapProps = {
 
 export default function Map({
 	location,
+	setUserLoc,
 	followUser,
 	setFollowUser,
 	pin,
 	setPin,
 }: MapProps) {
-	const { top, bottom } = useSafeAreaInsets();
-	const { spot, spotDispatch } = useSpotContext()!;
+	const { top } = useSafeAreaInsets();
+	const { clearSpotForm } = useSpotContext()!;
 	const mapViewRef = useRef<MapViewRef | null>(null);
 	const cameraRef = useRef<CameraRef | null>(null);
 
@@ -41,17 +44,8 @@ export default function Map({
 			return;
 		}
 		setPin({ ...pin, show: false });
-		spotDispatch({
-			type: "clear_spot",
-			payload: {
-				...spot,
-			},
-		});
+		clearSpotForm();
 	};
-
-	useEffect(() => {
-		console.log(location);
-	}, [location]);
 
 	return (
 		<MapView
@@ -71,20 +65,10 @@ export default function Map({
 		>
 			<Camera
 				ref={cameraRef}
-				defaultSettings={
-					location === null
-						? {
-								centerCoordinate: [-100, 40],
-								zoomLevel: 3,
-						  }
-						: {
-								// centerCoordinate: [
-								// 	location.coords.longitude,
-								// 	location.coords.latitude,
-								// ],
-								// zoomLevel: 17,
-						  }
-				}
+				defaultSettings={{
+					centerCoordinate: [-100, 40],
+					zoomLevel: 3,
+				}}
 				followUserLocation={location !== null ? followUser : false}
 				followUserMode={UserTrackingMode.FollowWithHeading}
 				onUserTrackingModeChange={(e) => {
@@ -94,7 +78,7 @@ export default function Map({
 				}}
 			/>
 			<Pin pin={pin} />
-			<UserLocation visible />
+			<UserLocation visible onUpdate={(loc: Location) => setUserLoc(loc)} />
 		</MapView>
 	);
 }

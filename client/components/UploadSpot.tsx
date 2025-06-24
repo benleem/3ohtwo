@@ -16,44 +16,39 @@ import { useEffect, useState } from "react";
 import { Link } from "expo-router";
 import { Category, useSpotContext } from "@/context/SpotsContext";
 import SpotImagePicker from "./SpotImagePicker";
+import * as SQLite from "expo-sqlite";
 
 type CategoryButtonProps = {
 	item: Category;
 };
 
 function CategoryButton({ item }: CategoryButtonProps) {
-	const { spot, spotDispatch } = useSpotContext()!;
+	const { currentSpot, updateSpotForm } = useSpotContext()!;
 	const [selected, setSelected] = useState<boolean>(false);
 
 	const handleToggle = (item: Category) => {
-		if (spot.categories.includes(item)) {
-			spotDispatch({
-				type: "update_spot",
-				payload: {
-					...spot,
-					categories: spot.categories.filter((category) => {
-						return category !== item;
-					}),
-				},
+		if (currentSpot.categories.includes(item)) {
+			updateSpotForm({
+				...currentSpot,
+				categories: currentSpot.categories.filter((category) => {
+					return category !== item;
+				}),
 			});
 			return;
 		}
-		spotDispatch({
-			type: "update_spot",
-			payload: {
-				...spot,
-				categories: [...spot.categories, item],
-			},
+		updateSpotForm({
+			...currentSpot,
+			categories: [...currentSpot.categories, item],
 		});
 	};
 
 	useEffect(() => {
-		if (spot.categories.includes(item)) {
+		if (currentSpot.categories.includes(item)) {
 			setSelected(true);
 			return;
 		}
 		setSelected(false);
-	}, [spot]);
+	}, [currentSpot]);
 
 	return (
 		<Pressable
@@ -94,10 +89,11 @@ function CategoryButtons() {
 }
 
 function FormButtons() {
+	const { currentSpot, createSpot } = useSpotContext()!;
 	const { bottom } = useSafeAreaInsets();
 
-	const handleSubmit = () => {
-		console.log("Submitted");
+	const handleSubmit = async () => {
+		await createSpot(currentSpot);
 	};
 
 	return (
@@ -122,19 +118,16 @@ function FormButtons() {
 }
 
 export default function UploadSpot() {
-	const { spot, spotDispatch } = useSpotContext()!;
+	const { currentSpot, updateSpotForm } = useSpotContext()!;
 
 	// const [switchEnabled, setSwitchEnabled] = useState(false);
 	// const toggleSwitch = () =>
 	// 	setSwitchEnabled((previousState) => !previousState);
 
 	const updateName = (text: string) => {
-		spotDispatch({
-			type: "update_spot",
-			payload: {
-				...spot,
-				name: text,
-			},
+		updateSpotForm({
+			...currentSpot,
+			name: text,
 		});
 	};
 
@@ -148,7 +141,7 @@ export default function UploadSpot() {
 						placeholderTextColor={"gray"}
 						placeholder="Spot name"
 						onChangeText={(text) => updateName(text)}
-						value={spot.name}
+						value={currentSpot.name}
 					/>
 					<CategoryButtons />
 					{/* <View style={styles.switchContainer}>

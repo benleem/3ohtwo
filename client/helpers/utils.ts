@@ -1,6 +1,10 @@
-import { Coords } from "@/context/UserLocationContext";
+import { Coords } from "@/context/SpotsContext";
 
-export const haversine = (pointA: Coords, pointB: Coords, imperial: boolean) => {
+export const haversine = (
+	pointA: Coords,
+	pointB: Coords,
+	imperial: boolean
+) => {
 	const RADIUS_MI = 3958.761316;
 	const RADIUS_KM = 6371.0087714;
 	const MI_TO_FEET = 5280;

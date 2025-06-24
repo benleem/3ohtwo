@@ -28,9 +28,12 @@ export default function Layout() {
 
 				// For a new or uninitialized database (version 0), apply the initial migration.
 				if (currentDbVersion === 0) {
+					// 0 false 1 true
 					await db.execAsync(`
 						PRAGMA journal_mode = WAL;
-						CREATE TABLE IF NOT EXISTS spots (id INTEGER PRIMARY KEY NOT NULL, name TEXT, content TEXT, modifiedDate TEXT);
+						CREATE TABLE IF NOT EXISTS spots (id INTEGER PRIMARY KEY NOT NULL, public INTEGER NOT NULL DEFAULT 0, name TEXT NOT NULL, image TEXT NOT NULL);
+						CREATE TABLE IF NOT EXISTS coords (id INTEGER PRIMARY KEY NOT NULL, spotid INTEGER NOT NULL,lat REAL NOT NULL, lon REAL NOT NULL);
+						CREATE TABLE IF NOT EXISTS categories (id INTEGER PRIMARY KEY NOT NULL, spotid INTEGER NOT NULL, category TEXT NOT NULL);
 					`);
 					console.log(
 						"Initial migration applied, DB version:",

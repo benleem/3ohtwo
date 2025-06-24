@@ -7,16 +7,6 @@ type MapBottomSheetProps = {
 };
 
 export default function MapBottomSheet({ children }: MapBottomSheetProps) {
-	// const [visible, setVisible] = useState<boolean>(false);
-	// const bottomSheetRef = useRef<BottomSheet | null>(null);
-	// const handleSheetChanges = (index: number) => {
-	// 	if (index === -1) {
-	// 		setVisible(false);
-	// 		return;
-	// 	}
-	// 	setVisible(true);
-	// };
-
 	return (
 		<BottomSheet
 			// ref={bottomSheetRef}
