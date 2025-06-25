@@ -13,7 +13,7 @@ import {
 	useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { Category, useSpotContext } from "@/context/SpotsContext";
 import SpotImagePicker from "./SpotImagePicker";
 import * as SQLite from "expo-sqlite";
@@ -89,11 +89,13 @@ function CategoryButtons() {
 }
 
 function FormButtons() {
-	const { currentSpot, createSpot } = useSpotContext()!;
+	const { currentSpot, createSpot, clearSpotForm } = useSpotContext()!;
 	const { bottom } = useSafeAreaInsets();
 
 	const handleSubmit = async () => {
 		await createSpot(currentSpot);
+		clearSpotForm();
+		router.push("/");
 	};
 
 	return (

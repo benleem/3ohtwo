@@ -5,22 +5,15 @@ import { useEffect, useMemo } from "react";
 import { useBottomSheet } from "@gorhom/bottom-sheet";
 import { haversine } from "@/helpers/utils";
 import { Colors } from "@/constants/Colors";
-import { PinInfo } from "./Pin";
-import { useSpotContext } from "@/context/SpotsContext";
+import { DEFAULT_PIN, PinInfo, useSpotContext } from "@/context/SpotsContext";
 import { Location } from "@maplibre/maplibre-react-native";
 
 type ConfirmUploadSpotProps = {
-	pin: PinInfo;
-	setPin: React.Dispatch<React.SetStateAction<PinInfo>>;
 	userLoc: Location | null;
 };
 
-export default function ConfirmUploadSpot({
-	pin,
-	setPin,
-	userLoc,
-}: ConfirmUploadSpotProps) {
-	const { clearSpotForm } = useSpotContext()!;
+export default function ConfirmUploadSpot({ userLoc }: ConfirmUploadSpotProps) {
+	const { pin, setPin, clearSpotForm } = useSpotContext()!;
 	const { close, expand } = useBottomSheet();
 	const pinDistance = useMemo(() => {
 		if (userLoc !== null && pin.show) {
@@ -34,7 +27,6 @@ export default function ConfirmUploadSpot({
 	}, [pin, userLoc]);
 
 	const handleClose = () => {
-		setPin({ ...pin, show: false });
 		clearSpotForm();
 	};
 

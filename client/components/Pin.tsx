@@ -1,10 +1,5 @@
-import { Coords } from "@/context/SpotsContext";
+import { Coords, PinInfo } from "@/context/SpotsContext";
 import { ShapeSource, SymbolLayer } from "@maplibre/maplibre-react-native";
-
-export type PinInfo = {
-	coords: Coords;
-	show: boolean;
-};
 
 type PinProps = {
 	pin: PinInfo;

@@ -9,8 +9,8 @@ import {
 	MapViewRef,
 	Location,
 } from "@maplibre/maplibre-react-native";
-import Pin, { PinInfo } from "./Pin";
-import { useSpotContext } from "@/context/SpotsContext";
+import Pin from "./Pin";
+import { DEFAULT_PIN, PinInfo, useSpotContext } from "@/context/SpotsContext";
 import { LocationObject } from "expo-location";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -19,8 +19,6 @@ type MapProps = {
 	setUserLoc: React.Dispatch<React.SetStateAction<Location | null>>;
 	followUser: boolean;
 	setFollowUser: React.Dispatch<React.SetStateAction<boolean>>;
-	pin: PinInfo;
-	setPin: React.Dispatch<React.SetStateAction<PinInfo>>;
 };
 
 export default function Map({
@@ -28,11 +26,9 @@ export default function Map({
 	setUserLoc,
 	followUser,
 	setFollowUser,
-	pin,
-	setPin,
 }: MapProps) {
 	const { top } = useSafeAreaInsets();
-	const { clearSpotForm } = useSpotContext()!;
+	const { pin, clearSpotForm, setPin } = useSpotContext()!;
 	const mapViewRef = useRef<MapViewRef | null>(null);
 	const cameraRef = useRef<CameraRef | null>(null);
 
@@ -43,7 +39,6 @@ export default function Map({
 			setPin({ coords: e.geometry.coordinates, show: true });
 			return;
 		}
-		setPin({ ...pin, show: false });
 		clearSpotForm();
 	};
 

@@ -34,7 +34,7 @@ type DBCoords = {
 
 type Spot = {
 	public: boolean;
-	coords: Coords | null;
+	coords: Coords;
 	name: string;
 	categories: Category[];
 	image: string;
@@ -49,15 +49,26 @@ type DBSpot = {
 
 const DEFAULT_SPOT: Spot = {
 	public: false,
-	coords: null,
+	coords: [0, 0],
 	name: "",
 	categories: [],
 	image: "",
 };
 
+export type PinInfo = {
+	coords: Coords;
+	show: boolean;
+};
+
+export const DEFAULT_PIN: PinInfo = {
+	coords: [0, 0],
+	show: false,
+};
+
 type SpotContextProps = {
 	spots: Spot[];
 	currentSpot: Spot;
+	pin: PinInfo;
 	updateSpotForm: (spot: Spot) => void;
 	clearSpotForm: () => void;
 	getSpotById: (id: number) => Promise<void>;
@@ -65,6 +76,7 @@ type SpotContextProps = {
 	createSpot: (spot: Spot) => Promise<void>;
 	updateSpot: (spot: Spot, id: number) => Promise<void>;
 	deleteSpot: (id: number) => Promise<void>;
+	setPin: React.Dispatch<React.SetStateAction<PinInfo>>;
 };
 
 const SpotContext = createContext<SpotContextProps | null>(null);
@@ -77,6 +89,10 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 	const db = SQLite.useSQLiteContext();
 	const [spots, setSpots] = useState<Spot[]>([]);
 	const [currentSpot, setCurrentSpot] = useState<Spot>(DEFAULT_SPOT);
+	const [pin, setPin] = useState<PinInfo>({
+		coords: [0, 0],
+		show: false,
+	});
 
 	useEffect(() => {
 		console.log(currentSpot);
@@ -90,12 +106,20 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 		getSpots();
 	}, [db]);
 
+	useEffect(() => {
+		if (pin.show) {
+			updateSpotForm({ ...currentSpot, coords: pin.coords });
+			return;
+		}
+	}, [pin]);
+
 	// form state changes
 	const updateSpotForm = (spot: Spot) => {
 		setCurrentSpot(spot);
 	};
 
 	const clearSpotForm = () => {
+		setPin(DEFAULT_PIN);
 		setCurrentSpot(DEFAULT_SPOT);
 	};
 
@@ -104,12 +128,21 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 		// await SQLite.deleteDatabaseAsync("3ohtwo.db");
 		try {
 			const spots = await db.getAllAsync<Spot>("SELECT * FROM spots");
-			console.log(spots);
-			// setSpots(spots);
+			setSpots(spots);
 		} catch (err) {
 			console.log(err);
 		}
 	}, [db]);
+
+	// const getSpotsByRegion = async () => {
+	// 	try {
+	// 		const spots = await db.getAllAsync<Spot>("SELECT * FROM spots");
+	// 		console.log(spots);
+	// 		setSpots(spots);
+	// 	} catch (err) {
+	// 		console.log(err);
+	// 	}
+	// };
 
 	const getSpotById = async (id: number) => {
 		try {
@@ -181,6 +214,7 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 			value={{
 				spots,
 				currentSpot,
+				pin,
 				updateSpotForm,
 				clearSpotForm,
 				getSpotById,
@@ -188,6 +222,7 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 				createSpot,
 				updateSpot,
 				deleteSpot,
+				setPin,
 			}}
 		>
 			{children}

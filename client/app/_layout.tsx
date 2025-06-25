@@ -5,10 +5,12 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SpotProvider } from "@/context/SpotsContext";
 import * as SQLite from "expo-sqlite";
 
+const DB_NAME = "3ohtwo.db";
+
 export default function Layout() {
 	return (
 		<SQLite.SQLiteProvider
-			databaseName="3ohtwo.db"
+			databaseName={DB_NAME}
 			onInit={async (db: SQLite.SQLiteDatabase) => {
 				// Define the target database version.
 				const DATABASE_VERSION = 1;
