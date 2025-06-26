@@ -9,6 +9,7 @@ import ConfirmUploadSpot from "@/components/ConfirmUploadSpot";
 import { MapBottomSheetProvider } from "@/context/BottomSheetContext";
 import { Location } from "@maplibre/maplibre-react-native";
 import { useSpotContext } from "@/context/SpotsContext";
+import SpotInfo from "@/components/SpotInfo";
 
 export default function Tab() {
 	const { currentSpot, pin, updateSpotForm } = useSpotContext()!;
@@ -40,6 +41,9 @@ export default function Tab() {
 			{location !== null && <FindUserPressable setFollowUser={setFollowUser} />}
 			<MapBottomSheetProvider>
 				<ConfirmUploadSpot userLoc={userLoc} />
+			</MapBottomSheetProvider>
+			<MapBottomSheetProvider>
+				<SpotInfo />
 			</MapBottomSheetProvider>
 			{/* <MapBottomSheet>
 				<ConfirmUploadSpot pin={pin} setPin={setPin} />

@@ -33,9 +33,8 @@ export default function Layout() {
 					// 0 false 1 true
 					await db.execAsync(`
 						PRAGMA journal_mode = WAL;
-						CREATE TABLE IF NOT EXISTS spots (id INTEGER PRIMARY KEY NOT NULL, public INTEGER NOT NULL DEFAULT 0, name TEXT NOT NULL, image TEXT NOT NULL);
-						CREATE TABLE IF NOT EXISTS coords (id INTEGER PRIMARY KEY NOT NULL, spotid INTEGER NOT NULL,lat REAL NOT NULL, lon REAL NOT NULL);
-						CREATE TABLE IF NOT EXISTS categories (id INTEGER PRIMARY KEY NOT NULL, spotid INTEGER NOT NULL, category TEXT NOT NULL);
+						CREATE TABLE IF NOT EXISTS spots (id INTEGER PRIMARY KEY NOT NULL, public INTEGER NOT NULL DEFAULT 0, lat REAL NOT NULL, lon REAL NOT NULL, name TEXT NOT NULL, image TEXT NOT NULL);
+						CREATE TABLE IF NOT EXISTS categories (id INTEGER PRIMARY KEY NOT NULL, spot_id INTEGER NOT NULL, category TEXT NOT NULL);
 					`);
 					console.log(
 						"Initial migration applied, DB version:",

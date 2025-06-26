@@ -1,13 +1,11 @@
-import { Coords, PinInfo } from "@/context/SpotsContext";
+import { useSpotContext } from "@/context/SpotsContext";
 import { ShapeSource, SymbolLayer } from "@maplibre/maplibre-react-native";
-
-type PinProps = {
-	pin: PinInfo;
-};
 
 const customPin = require("../assets/images/pin.png");
 
-export default function Pin({ pin }: PinProps) {
+export default function Pin() {
+	const { pin } = useSpotContext()!;
+
 	return (
 		<ShapeSource
 			id="pin-shape-source"
@@ -16,14 +14,14 @@ export default function Pin({ pin }: PinProps) {
 				features: [
 					{
 						type: "Feature",
-						properties: {
-							id: "pin",
-							// icon: "custom-pin",
-							visible: pin.show,
-						},
+						id: "pin",
 						geometry: {
 							type: "Point",
 							coordinates: pin.coords,
+						},
+						properties: {
+							// icon: "custom-pin",
+							visible: pin.show,
 						},
 					},
 				],

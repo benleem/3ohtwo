@@ -20,19 +20,13 @@ export enum Category {
 type DBCategory = {
 	id: number;
 	spotId: number;
-	categry: Category;
+	category: Category;
 };
 
 export type Coords = [number, number];
 
-type DBCoords = {
-	id: number;
-	spotId: number;
-	lat: number;
-	lon: number;
-};
-
-type Spot = {
+export type Spot = {
+	id?: number;
 	public: boolean;
 	coords: Coords;
 	name: string;
@@ -43,6 +37,8 @@ type Spot = {
 type DBSpot = {
 	id: number;
 	public: number;
+	lat: number;
+	lon: number;
 	name: string;
 	image: string;
 };
@@ -125,12 +121,34 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 
 	// db changes
 	const getSpots = useCallback(async () => {
-		// await SQLite.deleteDatabaseAsync("3ohtwo.db");
 		try {
-			const spots = await db.getAllAsync<Spot>("SELECT * FROM spots");
-			setSpots(spots);
-		} catch (err) {
-			console.log(err);
+			let newSpots: Spot[] = [];
+			let dbSpots: DBSpot[] = [];
+			await db.withTransactionAsync(async () => {
+				dbSpots = await db.getAllAsync<DBSpot>("SELECT * FROM spots");
+				// const dbCategories = await db.getAllAsync<DBCategory>(
+				// 	"SELECT * FROM categories"
+				// );
+			});
+			dbSpots.forEach((dbSpot) => {
+				newSpots.push({
+					id: dbSpot.id,
+					public: dbSpot.public === 0 ? false : true,
+					coords: [dbSpot.lon, dbSpot.lat],
+					name: dbSpot.name,
+					categories: [],
+					// need to optimize what the frick
+					// categories: dbCategories.filter((dbCategory) => {
+					// 	if (dbCategory.spotId === dbSpot.id) {
+					// 		return dbCategory.category;
+					// 	}
+					// }),
+					image: dbSpot.image,
+				});
+			});
+			setSpots(newSpots);
+		} catch (error) {
+			console.log(error);
 		}
 	}, [db]);
 
@@ -161,18 +179,33 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 
 	const createSpot = async (spot: Spot) => {
 		try {
-			const newSpot = await db.runAsync(
-				"INSERT INTO spots (public, name, image) VALUES ($public, $name, $image)",
-				{
-					$public: spot.public === true ? 1 : 0,
-					$name: spot.name,
-					$image: spot.image,
-				}
-			);
-			// console.log(newSpot.lastInsertRowId);
-			// setSpots(spots);
-		} catch (err) {
-			console.log(err);
+			await db.withExclusiveTransactionAsync(async (txn) => {
+				let result = await txn.runAsync(
+					`INSERT INTO spots (public, lat, lon, name, image) VALUES ($public, $lat, $lon, $name, $image)
+					`,
+					{
+						$public: spot.public === true ? 1 : 0,
+						$lat: spot.coords[1],
+						$lon: spot.coords[0],
+						$name: spot.name,
+						$image: spot.image,
+					}
+				);
+
+				spot.categories.forEach(async (category: Category) => {
+					await txn.runAsync(
+						`INSERT INTO categories (spot_id, category) VALUES ($spotId, $category)
+						`,
+						{
+							$spotId: result.lastInsertRowId,
+							$category: category,
+						}
+					);
+				});
+			});
+			await getSpots();
+		} catch (error) {
+			console.log(error);
 		}
 	};
 

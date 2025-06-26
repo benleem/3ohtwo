@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { Platform, StyleSheet } from "react-native";
 import {
 	Camera,
@@ -10,9 +10,10 @@ import {
 	Location,
 } from "@maplibre/maplibre-react-native";
 import Pin from "./Pin";
-import { DEFAULT_PIN, PinInfo, useSpotContext } from "@/context/SpotsContext";
+import { useSpotContext } from "@/context/SpotsContext";
 import { LocationObject } from "expo-location";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Markers from "./Markers";
 
 type MapProps = {
 	location: LocationObject | null;
@@ -72,7 +73,8 @@ export default function Map({
 					}
 				}}
 			/>
-			<Pin pin={pin} />
+			<Pin />
+			<Markers />
 			<UserLocation visible onUpdate={(loc: Location) => setUserLoc(loc)} />
 		</MapView>
 	);
