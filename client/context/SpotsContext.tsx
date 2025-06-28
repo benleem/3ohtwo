@@ -79,6 +79,8 @@ const SpotContext = createContext<SpotContextProps | null>(null);
 
 export const useSpotContext = () => useContext(SpotContext);
 
+const DB_NAME = "3ohtwo.db";
+
 export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
@@ -121,31 +123,17 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 
 	// db changes
 	const getSpots = useCallback(async () => {
+		// await SQLite.deleteDatabaseAsync("3ohtwo.db");
+
 		try {
 			let newSpots: Spot[] = [];
-			let dbSpots: DBSpot[] = [];
-			await db.withTransactionAsync(async () => {
-				dbSpots = await db.getAllAsync<DBSpot>("SELECT * FROM spots");
-				// const dbCategories = await db.getAllAsync<DBCategory>(
-				// 	"SELECT * FROM categories"
-				// );
-			});
-			dbSpots.forEach((dbSpot) => {
-				newSpots.push({
-					id: dbSpot.id,
-					public: dbSpot.public === 0 ? false : true,
-					coords: [dbSpot.lon, dbSpot.lat],
-					name: dbSpot.name,
-					categories: [],
-					// need to optimize what the frick
-					// categories: dbCategories.filter((dbCategory) => {
-					// 	if (dbCategory.spotId === dbSpot.id) {
-					// 		return dbCategory.category;
-					// 	}
-					// }),
-					image: dbSpot.image,
-				});
-			});
+			let dbSpots = await db.getAllAsync(
+				// "SELECT * FROM spots"
+				// "SELECT * FROM categories"
+				// "SELECT * FROM spot_categories"
+				"SELECT s.id, s.public, s.lat, s.lon, s.name, s.image, GROUP_CONCAT(c.category, ', ') AS categories FROM spots AS s LEFT JOIN spot_categories AS sc ON s.id = sc.spot_id LEFT JOIN categories AS c ON sc.category_id = c.id GROUP BY s.id ORDER BY s.id"
+			);
+			console.log(dbSpots);
 			setSpots(newSpots);
 		} catch (error) {
 			console.log(error);
@@ -181,8 +169,7 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 		try {
 			await db.withExclusiveTransactionAsync(async (txn) => {
 				let result = await txn.runAsync(
-					`INSERT INTO spots (public, lat, lon, name, image) VALUES ($public, $lat, $lon, $name, $image)
-					`,
+					"INSERT INTO spots (public, lat, lon, name, image) VALUES ($public, $lat, $lon, $name, $image)",
 					{
 						$public: spot.public === true ? 1 : 0,
 						$lat: spot.coords[1],
@@ -192,16 +179,14 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 					}
 				);
 
-				spot.categories.forEach(async (category: Category) => {
-					await txn.runAsync(
-						`INSERT INTO categories (spot_id, category) VALUES ($spotId, $category)
-						`,
-						{
-							$spotId: result.lastInsertRowId,
-							$category: category,
-						}
-					);
-				});
+				let categoriesQuery = `${spot.categories
+					.map((category: Category, i: number) => {
+						return `INSERT OR IGNORE INTO spot_categories (spot_id, category_id) VALUES (${result.lastInsertRowId}, 1);\n`;
+					})
+					.join("")}`;
+				if (spot.categories.length > 0) {
+					await txn.execAsync(categoriesQuery);
+				}
 			});
 			await getSpots();
 		} catch (error) {
@@ -262,3 +247,4 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 		</SpotContext.Provider>
 	);
 };
+//

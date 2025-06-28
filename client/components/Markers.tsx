@@ -40,6 +40,11 @@ export default function Markers() {
 				type: "FeatureCollection",
 				features: spotMarkers,
 			}}
+			// onPress={(event) =>
+			// 	event.features.forEach((feature) => {
+			// 		console.log(feature.properties);
+			// 	})
+			// }
 		>
 			<SymbolLayer
 				id="spot-cluster-count"
@@ -47,7 +52,7 @@ export default function Markers() {
 				style={{
 					textField: "{point_count_abbreviated}",
 					textFont: ["Noto Sans Regular"],
-					textSize: 25,
+					textSize: 18,
 				}}
 			/>
 			<CircleLayer

@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { StyleSheet } from "react-native";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import FindUserPressable from "./FindUserPressable";
 
 type MapBottomSheetProps = {
 	children: React.ReactNode;
