@@ -40,6 +40,7 @@ type DBSpot = {
 	lat: number;
 	lon: number;
 	name: string;
+	categories: string;
 	image: string;
 };
 
@@ -67,7 +68,7 @@ type SpotContextProps = {
 	pin: PinInfo;
 	updateSpotForm: (spot: Spot) => void;
 	clearSpotForm: () => void;
-	getSpotById: (id: number) => Promise<void>;
+	// getSpotById: (id: number) => Promise<void>;
 	getSpots: () => Promise<void>;
 	createSpot: (spot: Spot) => Promise<void>;
 	updateSpot: (spot: Spot, id: number) => Promise<void>;
@@ -78,8 +79,6 @@ type SpotContextProps = {
 const SpotContext = createContext<SpotContextProps | null>(null);
 
 export const useSpotContext = () => useContext(SpotContext);
-
-const DB_NAME = "3ohtwo.db";
 
 export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 	children,
@@ -127,13 +126,21 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 
 		try {
 			let newSpots: Spot[] = [];
-			let dbSpots = await db.getAllAsync(
-				// "SELECT * FROM spots"
-				// "SELECT * FROM categories"
-				// "SELECT * FROM spot_categories"
+			let dbSpots = await db.getAllAsync<DBSpot>(
 				"SELECT s.id, s.public, s.lat, s.lon, s.name, s.image, GROUP_CONCAT(c.category, ', ') AS categories FROM spots AS s LEFT JOIN spot_categories AS sc ON s.id = sc.spot_id LEFT JOIN categories AS c ON sc.category_id = c.id GROUP BY s.id ORDER BY s.id"
 			);
-			console.log(dbSpots);
+			dbSpots.forEach((dbSpot) => {
+				newSpots.push({
+					id: dbSpot.id,
+					public: dbSpot.public === 1 ? true : false,
+					coords: [dbSpot.lon, dbSpot.lat],
+					name: dbSpot.name,
+					categories: dbSpot.categories
+						? (dbSpot.categories.split(", ") as Category[])
+						: [],
+					image: dbSpot.image,
+				});
+			});
 			setSpots(newSpots);
 		} catch (error) {
 			console.log(error);
@@ -150,20 +157,20 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 	// 	}
 	// };
 
-	const getSpotById = async (id: number) => {
-		try {
-			const spot = await db.getFirstAsync<Spot>(
-				"SELECT * FROM spots WHERE id = $id",
-				{
-					$id: id,
-				}
-			);
-			// console.log(spot);
-			// setSpots(spots);
-		} catch (err) {
-			console.log(err);
-		}
-	};
+	// const getSpotById = async (id: number) => {
+	// 	try {
+	// 		const spot = await db.getFirstAsync<Spot>(
+	// 			"SELECT * FROM spots WHERE id = $id",
+	// 			{
+	// 				$id: id,
+	// 			}
+	// 		);
+	// 		// console.log(spot);
+	// 		// setSpots(spots);
+	// 	} catch (err) {
+	// 		console.log(err);
+	// 	}
+	// };
 
 	const createSpot = async (spot: Spot) => {
 		try {
@@ -179,12 +186,12 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 					}
 				);
 
-				let categoriesQuery = `${spot.categories
-					.map((category: Category, i: number) => {
-						return `INSERT OR IGNORE INTO spot_categories (spot_id, category_id) VALUES (${result.lastInsertRowId}, 1);\n`;
-					})
-					.join("")}`;
 				if (spot.categories.length > 0) {
+					let categoriesQuery = `${spot.categories
+						.map(() => {
+							return `INSERT OR IGNORE INTO spot_categories (spot_id, category_id) VALUES (${result.lastInsertRowId}, 1);\n`;
+						})
+						.join("")}`;
 					await txn.execAsync(categoriesQuery);
 				}
 			});
@@ -196,17 +203,20 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 
 	const updateSpot = async (spot: Spot, id: number) => {
 		try {
-			const updatedSpot = await db.runAsync(
-				"UPDATE spots SET public = $public, name = $name, image = $image WHERE id = $id",
-				{
-					$id: id,
-					$public: spot.public === true ? 1 : 0,
-					$name: spot.name,
-					$image: spot.image,
-				}
-			);
-			// console.log(updatedSpot);
-			// setSpots(spots);
+			await db.withExclusiveTransactionAsync(async (txn) => {
+				const result = await txn.runAsync(
+					"UPDATE spots SET public = $public, lat = $lat, lon = $lon, name = $name, image = $image WHERE id = $id",
+					{
+						$id: id,
+						$public: spot.public === true ? 1 : 0,
+						$lat: spot.coords[1],
+						$lon: spot.coords[0],
+						$name: spot.name,
+						$image: spot.image,
+					}
+				);
+			});
+			await getSpots();
 		} catch (err) {
 			console.log(err);
 		}
@@ -214,14 +224,15 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 
 	const deleteSpot = async (id: number) => {
 		try {
-			const deletedSpot = await db.runAsync(
-				"DELETE FROM spots WHERE id = $id",
-				{
+			await db.withExclusiveTransactionAsync(async (txn) => {
+				const result = await txn.runAsync("DELETE FROM spots WHERE id = $id", {
 					$id: id,
-				}
-			);
-			// console.log(deletedSpot);
-			// setSpots(spots);
+				});
+				await txn.runAsync("DELETE FROM spot_categories WHERE spot_id = $id", {
+					$id: result.lastInsertRowId,
+				});
+			});
+			await getSpots();
 		} catch (err) {
 			console.log(err);
 		}
@@ -235,7 +246,7 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 				pin,
 				updateSpotForm,
 				clearSpotForm,
-				getSpotById,
+				// getSpotById,
 				getSpots,
 				createSpot,
 				updateSpot,
