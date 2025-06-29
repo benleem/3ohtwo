@@ -123,7 +123,6 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 	// db changes
 	const getSpots = useCallback(async () => {
 		// await SQLite.deleteDatabaseAsync("3ohtwo.db");
-
 		try {
 			let newSpots: Spot[] = [];
 			let dbSpots = await db.getAllAsync<DBSpot>(

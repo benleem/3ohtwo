@@ -30,16 +30,13 @@ export default function Layout() {
 
 				// For a new or uninitialized database (version 0), apply the initial migration.
 				if (currentDbVersion === 0) {
-					// 0 false 1 true
 					await db.execAsync(`
 						PRAGMA journal_mode = WAL;
 						CREATE TABLE IF NOT EXISTS spots (id INTEGER PRIMARY KEY NOT NULL, public INTEGER NOT NULL DEFAULT 0, lat REAL NOT NULL, lon REAL NOT NULL, name TEXT NOT NULL, image TEXT NOT NULL);
 						CREATE TABLE IF NOT EXISTS categories (id INTEGER PRIMARY KEY NOT NULL, category TEXT NOT NULL);
 						CREATE TABLE IF NOT EXISTS spot_categories (spot_id INTEGER, category_id INTEGER, FOREIGN KEY(spot_id) REFERENCES spots(id), FOREIGN KEY(category_id) REFERENCES categories(id), UNIQUE(spot_id, category_id));
-						CREATE INDEX IF NOT EXISTS idx_spots_id ON spots(id);
 						CREATE INDEX IF NOT EXISTS idx_spot_categories_spot_id ON spot_categories (spot_id);
 						CREATE INDEX IF NOT EXISTS idx_spot_categories_category_id ON spot_categories (category_id);
-						CREATE INDEX IF NOT EXISTS idx_categories_id ON categories(id);
 						INSERT INTO categories (category) VALUES ('nature');
 					`);
 					console.log(
