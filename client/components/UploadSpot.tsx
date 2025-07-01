@@ -14,24 +14,24 @@ import {
 } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
 import { Link, router } from "expo-router";
-import { Category, useSpotContext } from "@/context/SpotsContext";
+import { DBCategory, useSpotContext } from "@/context/SpotsContext";
 import SpotImagePicker from "./SpotImagePicker";
 import * as SQLite from "expo-sqlite";
 
 type CategoryButtonProps = {
-	item: Category;
+	item: DBCategory;
 };
 
 function CategoryButton({ item }: CategoryButtonProps) {
 	const { currentSpot, updateSpotForm } = useSpotContext()!;
 	const [selected, setSelected] = useState<boolean>(false);
 
-	const handleToggle = (item: Category) => {
+	const handleToggle = (item: DBCategory) => {
 		if (currentSpot.categories.includes(item)) {
 			updateSpotForm({
 				...currentSpot,
 				categories: currentSpot.categories.filter((category) => {
-					return category !== item;
+					return category.id !== item.id;
 				}),
 			});
 			return;
@@ -59,26 +59,19 @@ function CategoryButton({ item }: CategoryButtonProps) {
 			onPress={() => handleToggle(item)}
 		>
 			<Text style={[selected ? { color: "blue" } : { color: "black " }]}>
-				{item}
+				{item.category}
 			</Text>
 		</Pressable>
 	);
 }
 
 function CategoryButtons() {
-	const iterateCategories = () => {
-		let categories: Category[] = [];
-		const keys = Object.keys(Category);
-		keys.forEach((key) => {
-			categories.push(Category[key as keyof typeof Category]);
-		});
-		return categories;
-	};
+	const { categories } = useSpotContext()!;
 
 	return (
 		<FlatList
 			contentContainerStyle={styles.flatListContainer}
-			data={iterateCategories()}
+			data={categories}
 			renderItem={({ item }) => <CategoryButton item={item} />}
 			// need to generate actually uuid at some point
 			keyExtractor={(item, index) => `${item}-${index}`}
@@ -89,11 +82,16 @@ function CategoryButtons() {
 }
 
 function FormButtons() {
-	const { currentSpot, createSpot, clearSpotForm } = useSpotContext()!;
+	const { currentSpot, createSpot, updateSpot, clearSpotForm } =
+		useSpotContext()!;
 	const { bottom } = useSafeAreaInsets();
 
 	const handleSubmit = async () => {
-		await createSpot(currentSpot);
+		if (currentSpot.id === 0) {
+			await createSpot(currentSpot);
+		} else {
+			await updateSpot(currentSpot);
+		}
 		clearSpotForm();
 		router.push("/");
 	};

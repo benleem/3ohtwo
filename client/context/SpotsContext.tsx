@@ -17,20 +17,19 @@ export enum Category {
 	Hiking = "hiking",
 }
 
-type DBCategory = {
+export type DBCategory = {
 	id: number;
-	spotId: number;
 	category: Category;
 };
 
 export type Coords = [number, number];
 
 export type Spot = {
-	id?: number;
+	id: number;
 	public: boolean;
 	coords: Coords;
 	name: string;
-	categories: Category[];
+	categories: DBCategory[];
 	image: string;
 };
 
@@ -45,6 +44,7 @@ type DBSpot = {
 };
 
 const DEFAULT_SPOT: Spot = {
+	id: 0,
 	public: false,
 	coords: [0, 0],
 	name: "",
@@ -62,7 +62,31 @@ export const DEFAULT_PIN: PinInfo = {
 	show: false,
 };
 
+export const DB_MIGRATION = () => {
+	let categories: Category[] = [];
+	const keys = Object.keys(Category);
+	keys.forEach((key) => {
+		categories.push(Category[key as keyof typeof Category]);
+	});
+
+	let migration = `
+	PRAGMA journal_mode = WAL;
+	CREATE TABLE IF NOT EXISTS spots (id INTEGER PRIMARY KEY NOT NULL, public INTEGER NOT NULL DEFAULT 0, lat REAL NOT NULL, lon REAL NOT NULL, name TEXT NOT NULL, image TEXT NOT NULL);
+	CREATE TABLE IF NOT EXISTS categories (id INTEGER PRIMARY KEY NOT NULL, category TEXT NOT NULL);
+	CREATE TABLE IF NOT EXISTS spot_categories (spot_id INTEGER, category_id INTEGER, FOREIGN KEY(spot_id) REFERENCES spots(id), FOREIGN KEY(category_id) REFERENCES categories(id), UNIQUE(spot_id, category_id));
+	CREATE INDEX IF NOT EXISTS idx_spot_categories_spot_id ON spot_categories (spot_id);
+	CREATE INDEX IF NOT EXISTS idx_spot_categories_category_id ON spot_categories (category_id);
+	INSERT INTO categories (category) VALUES ${categories
+		.map((category) => {
+			return `('${category}')`;
+		})
+		.join(", ")};
+	`;
+	return migration;
+};
+
 type SpotContextProps = {
+	categories: DBCategory[];
 	spots: Spot[];
 	currentSpot: Spot;
 	pin: PinInfo;
@@ -71,7 +95,7 @@ type SpotContextProps = {
 	// getSpotById: (id: number) => Promise<void>;
 	getSpots: () => Promise<void>;
 	createSpot: (spot: Spot) => Promise<void>;
-	updateSpot: (spot: Spot, id: number) => Promise<void>;
+	updateSpot: (spot: Spot) => Promise<void>;
 	deleteSpot: (id: number) => Promise<void>;
 	setPin: React.Dispatch<React.SetStateAction<PinInfo>>;
 };
@@ -84,6 +108,7 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
 	const db = SQLite.useSQLiteContext();
+	const [categories, setCategories] = useState<DBCategory[]>([]);
 	const [spots, setSpots] = useState<Spot[]>([]);
 	const [currentSpot, setCurrentSpot] = useState<Spot>(DEFAULT_SPOT);
 	const [pin, setPin] = useState<PinInfo>({
@@ -99,7 +124,12 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 		console.log(spots);
 	}, [spots]);
 
+	// useEffect(() => {
+	// 	console.log(categories);
+	// }, [categories]);
+
 	useEffect(() => {
+		getCategories();
 		getSpots();
 	}, [db]);
 
@@ -121,22 +151,36 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 	};
 
 	// db changes
+	const getCategories = useCallback(async () => {
+		try {
+			let categories = await db.getAllAsync<DBCategory>(
+				"SELECT * FROM categories"
+			);
+			setCategories(categories);
+		} catch (error) {
+			console.log(error);
+		}
+	}, [db]);
+
 	const getSpots = useCallback(async () => {
 		// await SQLite.deleteDatabaseAsync("3ohtwo.db");
 		try {
 			let newSpots: Spot[] = [];
 			let dbSpots = await db.getAllAsync<DBSpot>(
-				"SELECT s.id, s.public, s.lat, s.lon, s.name, s.image, GROUP_CONCAT(c.category, ', ') AS categories FROM spots AS s LEFT JOIN spot_categories AS sc ON s.id = sc.spot_id LEFT JOIN categories AS c ON sc.category_id = c.id GROUP BY s.id ORDER BY s.id"
+				// "SELECT s.id, s.public, s.lat, s.lon, s.name, s.image, GROUP_CONCAT(c.category, ', ') AS categories FROM spots AS s LEFT JOIN spot_categories AS sc ON s.id = sc.spot_id LEFT JOIN categories AS c ON sc.category_id = c.id GROUP BY s.id ORDER BY s.id"
+				"SELECT s.id, s.public, s.lat, s.lon, s.name, s.image, json_group_array(json_object('id', c.id, 'category', c.category)) AS categories FROM spots AS s LEFT JOIN spot_categories AS sc ON s.id = sc.spot_id LEFT JOIN categories AS c ON sc.category_id = c.id GROUP BY s.id ORDER BY s.id"
 			);
-			dbSpots.forEach((dbSpot) => {
+			dbSpots.forEach((dbSpot, i) => {
+				let categories: DBCategory[] = JSON.parse(dbSpot.categories);
 				newSpots.push({
 					id: dbSpot.id,
 					public: dbSpot.public === 1 ? true : false,
 					coords: [dbSpot.lon, dbSpot.lat],
 					name: dbSpot.name,
-					categories: dbSpot.categories
-						? (dbSpot.categories.split(", ") as Category[])
-						: [],
+					categories:
+						categories[0].category !== null && categories[0].id !== null
+							? (categories as DBCategory[])
+							: ([] as DBCategory[]),
 					image: dbSpot.image,
 				});
 			});
@@ -186,11 +230,11 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 				);
 
 				if (spot.categories.length > 0) {
-					let categoriesQuery = `${spot.categories
-						.map(() => {
-							return `INSERT OR IGNORE INTO spot_categories (spot_id, category_id) VALUES (${result.lastInsertRowId}, 1);\n`;
+					let categoriesQuery = `INSERT OR IGNORE INTO spot_categories (spot_id, category_id) VALUES ${spot.categories
+						.map((category) => {
+							return `(${result.lastInsertRowId}, ${category.id})`;
 						})
-						.join("")}`;
+						.join(", ")};`;
 					await txn.execAsync(categoriesQuery);
 				}
 			});
@@ -200,13 +244,13 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 		}
 	};
 
-	const updateSpot = async (spot: Spot, id: number) => {
+	const updateSpot = async (spot: Spot) => {
 		try {
 			await db.withExclusiveTransactionAsync(async (txn) => {
-				const result = await txn.runAsync(
+				await txn.runAsync(
 					"UPDATE spots SET public = $public, lat = $lat, lon = $lon, name = $name, image = $image WHERE id = $id",
 					{
-						$id: id,
+						$id: spot.id,
 						$public: spot.public === true ? 1 : 0,
 						$lat: spot.coords[1],
 						$lon: spot.coords[0],
@@ -214,6 +258,33 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 						$image: spot.image,
 					}
 				);
+
+				if (spot.categories.length > 0) {
+					let categoriesDeleteQuery = `DELETE FROM spot_categories WHERE spot_id = ${
+						spot.id
+					} AND category_id NOT IN (${spot.categories
+						.map((category) => {
+							return category.id;
+						})
+						.join(", ")});`;
+					// console.log(categoriesDeleteQuery);
+					await txn.execAsync(categoriesDeleteQuery);
+
+					let categoriesInsertQuery = `INSERT OR IGNORE INTO spot_categories (spot_id, category_id) VALUES ${spot.categories
+						.map((category) => {
+							return `(${spot.id}, ${category.id})`;
+						})
+						.join(", ")};`;
+					// console.log(categoriesInsertQuery);
+					await txn.execAsync(categoriesInsertQuery);
+				} else {
+					await txn.runAsync(
+						"DELETE FROM spot_categories WHERE spot_id = $id",
+						{
+							$id: spot.id,
+						}
+					);
+				}
 			});
 			await getSpots();
 		} catch (err) {
@@ -224,11 +295,11 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 	const deleteSpot = async (id: number) => {
 		try {
 			await db.withExclusiveTransactionAsync(async (txn) => {
-				const result = await txn.runAsync("DELETE FROM spots WHERE id = $id", {
+				await txn.runAsync("DELETE FROM spots WHERE id = $id", {
 					$id: id,
 				});
 				await txn.runAsync("DELETE FROM spot_categories WHERE spot_id = $id", {
-					$id: result.lastInsertRowId,
+					$id: id,
 				});
 			});
 			await getSpots();
@@ -240,6 +311,7 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 	return (
 		<SpotContext.Provider
 			value={{
+				categories,
 				spots,
 				currentSpot,
 				pin,
