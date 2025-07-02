@@ -3,6 +3,7 @@ import * as ImagePicker from "expo-image-picker";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Feather from "@expo/vector-icons/Feather";
 import { useSpotContext } from "@/context/SpotsContext";
+import ImageView from "./ImageView";
 
 export default function SpotImagePicker() {
 	const { currentSpot, updateSpotForm } = useSpotContext()!;
@@ -37,18 +38,7 @@ export default function SpotImagePicker() {
 
 	return (
 		<View style={styles.pickerContainer}>
-			<View
-				style={[
-					styles.imageContainer,
-					currentSpot.image ? { borderWidth: 0 } : { borderWidth: 2 },
-				]}
-			>
-				{currentSpot.image ? (
-					<Image source={{ uri: currentSpot.image }} style={styles.image} />
-				) : (
-					<FontAwesome name="picture-o" size={128} color="gray" />
-				)}
-			</View>
+			<ImageView />
 			<View style={styles.buttonsContainer}>
 				<Pressable style={styles.button} onPress={pickImage}>
 					<Feather name="plus" size={24} color="black" />

@@ -29,7 +29,8 @@ export default function Map({
 	setFollowUser,
 }: MapProps) {
 	const { top } = useSafeAreaInsets();
-	const { pin, clearSpotForm, setPin } = useSpotContext()!;
+	const { currentSpot, pin, clearSpotForm, setPin, updateSpotForm } =
+		useSpotContext()!;
 	const mapViewRef = useRef<MapViewRef | null>(null);
 	const cameraRef = useRef<CameraRef | null>(null);
 

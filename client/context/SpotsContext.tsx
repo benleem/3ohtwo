@@ -133,13 +133,6 @@ export const SpotProvider: React.FC<{ children: React.ReactNode }> = ({
 		getSpots();
 	}, [db]);
 
-	useEffect(() => {
-		if (pin.show) {
-			updateSpotForm({ ...currentSpot, coords: pin.coords });
-			return;
-		}
-	}, [pin]);
-
 	// form state changes
 	const updateSpotForm = (spot: Spot) => {
 		setCurrentSpot(spot);

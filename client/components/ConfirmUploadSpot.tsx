@@ -2,21 +2,25 @@ import { StyleSheet, Text, View, Pressable } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
 import { Link } from "expo-router";
 import { useEffect, useMemo } from "react";
-import { useBottomSheet } from "@gorhom/bottom-sheet";
+import { BottomSheetView, useBottomSheet } from "@gorhom/bottom-sheet";
 import { haversine } from "@/helpers/utils";
 import { Colors } from "@/constants/Colors";
 import { DEFAULT_PIN, PinInfo, useSpotContext } from "@/context/SpotsContext";
 import { Location } from "@maplibre/maplibre-react-native";
 
 type ConfirmUploadSpotProps = {
+	showConfirmUpload: boolean;
 	userLoc: Location | null;
 };
 
-export default function ConfirmUploadSpot({ userLoc }: ConfirmUploadSpotProps) {
+export default function ConfirmUploadSpot({
+	showConfirmUpload,
+	userLoc,
+}: ConfirmUploadSpotProps) {
 	const { pin, setPin, clearSpotForm } = useSpotContext()!;
 	const { close, expand } = useBottomSheet();
 	const pinDistance = useMemo(() => {
-		if (userLoc !== null && pin.show) {
+		if (userLoc !== null && pin.show && showConfirmUpload) {
 			let distance = haversine(
 				[userLoc.coords.longitude, userLoc.coords.latitude],
 				pin.coords,
@@ -24,19 +28,19 @@ export default function ConfirmUploadSpot({ userLoc }: ConfirmUploadSpotProps) {
 			);
 			return distance;
 		}
-	}, [pin, userLoc]);
+	}, [showConfirmUpload, pin, userLoc]);
 
 	const handleClose = () => {
 		clearSpotForm();
 	};
 
 	useEffect(() => {
-		if (pin.show) {
+		if (showConfirmUpload) {
 			expand();
 			return;
 		}
 		close();
-	}, [pin]);
+	}, [showConfirmUpload]);
 
 	return (
 		<View style={styles.confirmWrapper}>

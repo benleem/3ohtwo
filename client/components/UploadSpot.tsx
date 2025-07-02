@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 12,
 		marginBottom: 12,
 		gap: 12,
-		maxHeight: 430,
+		// maxHeight: 430,
 		// backgroundColor: "red",
 	},
 	categoryButton: {

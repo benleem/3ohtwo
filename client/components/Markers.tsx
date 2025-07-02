@@ -1,4 +1,4 @@
-import { Spot, useSpotContext } from "@/context/SpotsContext";
+import { DEFAULT_PIN, Spot, useSpotContext } from "@/context/SpotsContext";
 import {
 	CircleLayer,
 	ShapeSource,
@@ -6,11 +6,12 @@ import {
 } from "@maplibre/maplibre-react-native";
 import { useMemo } from "react";
 import { Alert } from "react-native";
+import { pinchHandlerName } from "react-native-gesture-handler/lib/typescript/handlers/PinchGestureHandler";
 
 const customPin = require("../assets/images/pin.png");
 
 export default function Markers() {
-	const { spots } = useSpotContext()!;
+	const { pin, spots, updateSpotForm, setPin } = useSpotContext()!;
 	const spotMarkers = useMemo(() => {
 		let spotFeatureArray: any[] = [];
 		// need to optimize, don't want to iterate over whole spots array everytime it changes
@@ -40,11 +41,18 @@ export default function Markers() {
 				type: "FeatureCollection",
 				features: spotMarkers,
 			}}
-			// onPress={(event) =>
-			// 	event.features.forEach((feature) => {
-			// 		console.log(feature.properties);
-			// 	})
-			// }
+			onPress={(event) => {
+				if (pin.show) {
+					setPin(DEFAULT_PIN);
+				}
+				event.features.forEach((feature) => {
+					if (feature.properties && feature.properties.dbId) {
+						let spotId = feature.properties.dbId;
+						let selectedSpot = spots.filter((spot) => spot.id === spotId)[0];
+						updateSpotForm(selectedSpot);
+					}
+				});
+			}}
 		>
 			<SymbolLayer
 				id="spot-cluster-count"
@@ -84,6 +92,7 @@ export default function Markers() {
 					iconAllowOverlap: true,
 					iconSize: 0.75,
 					iconOffset: [0, -24],
+					iconColor: "blue",
 				}}
 			/>
 		</ShapeSource>

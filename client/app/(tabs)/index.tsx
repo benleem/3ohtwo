@@ -19,6 +19,8 @@ export default function Tab() {
 	const { location } = requestLocation();
 	const [followUser, setFollowUser] = useState(true);
 	const [userLoc, setUserLoc] = useState<Location | null>(null);
+	const [showConfirmUpload, setShowConfirmUpload] = useState(false);
+	const [showSpotInfo, setShowSpotInfo] = useState(false);
 
 	// const animatedPOIListIndex = useSharedValue<number>(0);
 	// const animatedPOIListPosition = useSharedValue<number>(SCREEN_HEIGHT);
@@ -35,6 +37,33 @@ export default function Tab() {
 	// 		? animatedPOIListPosition.value
 	// 		: animatedPOIDetailsPosition.value
 	// );
+
+	useEffect(() => {
+		if (pin.show) {
+			setShowSpotInfo(false);
+			setShowConfirmUpload(true);
+			updateSpotForm({
+				id: 0,
+				public: false,
+				coords: pin.coords,
+				name: "",
+				categories: [],
+				image: "",
+			});
+			return;
+		}
+		setShowConfirmUpload(false);
+	}, [pin]);
+
+	useEffect(() => {
+		if (currentSpot.id !== 0) {
+			setShowConfirmUpload(false);
+			setShowSpotInfo(true);
+			return;
+		}
+		setShowSpotInfo(false);
+		// setShowConfirmUpload(false);
+	}, [currentSpot]);
 
 	useEffect(() => {
 		if (location !== null) {
@@ -66,14 +95,14 @@ export default function Tab() {
 				<FindUserPressable setFollowUser={setFollowUser} />
 			)}
 			<MapBottomSheetProvider>
-				<ConfirmUploadSpot userLoc={userLoc} />
+				<ConfirmUploadSpot
+					showConfirmUpload={showConfirmUpload}
+					userLoc={userLoc}
+				/>
 			</MapBottomSheetProvider>
 			<MapBottomSheetProvider>
-				<SpotInfo />
+				<SpotInfo showSpotInfo={showSpotInfo} userLoc={userLoc} />
 			</MapBottomSheetProvider>
-			{/* <MapBottomSheet>
-				<ConfirmUploadSpot pin={pin} setPin={setPin} />
-			</MapBottomSheet> */}
 		</View>
 	);
 }
