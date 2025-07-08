@@ -1,79 +1,46 @@
 import { StyleSheet, Text, View, Pressable } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
 import { Link } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
-import { useBottomSheet } from "@gorhom/bottom-sheet";
+import { useEffect, useMemo } from "react";
+import { BottomSheetView, useBottomSheet } from "@gorhom/bottom-sheet";
 import { haversine } from "@/helpers/utils";
 import { Colors } from "@/constants/Colors";
-import { PinInfo } from "./Pin";
-import * as Location from "expo-location";
-import { useSpotContext } from "@/context/SpotsContext";
+import { DEFAULT_PIN, PinInfo, useSpotContext } from "@/context/SpotsContext";
+import { Location } from "@maplibre/maplibre-react-native";
 
 type ConfirmUploadSpotProps = {
-	pin: PinInfo;
-	setPin: React.Dispatch<React.SetStateAction<PinInfo>>;
+	showConfirmUpload: boolean;
+	userLoc: Location | null;
 };
 
 export default function ConfirmUploadSpot({
-	pin,
-	setPin,
+	showConfirmUpload,
+	userLoc,
 }: ConfirmUploadSpotProps) {
-	const { spot, spotDispatch } = useSpotContext()!;
-	const { close, expand } = useBottomSheet()!;
-	const [locationSub, setLocationSub] =
-		useState<Location.LocationObject | null>(null);
+	const { pin, setPin, clearSpotForm } = useSpotContext()!;
+	const { close, expand } = useBottomSheet();
 	const pinDistance = useMemo(() => {
-		if (locationSub !== null && pin.show) {
-			return haversine(
-				[locationSub.coords.longitude, locationSub.coords.latitude],
+		if (userLoc !== null && pin.show && showConfirmUpload) {
+			let distance = haversine(
+				[userLoc.coords.longitude, userLoc.coords.latitude],
 				pin.coords,
 				true
 			);
+			return distance;
 		}
-		return "Can't find user";
-	}, [pin, locationSub]);
+	}, [showConfirmUpload, pin, userLoc]);
 
 	const handleClose = () => {
-		setPin({ ...pin, show: false });
-		spotDispatch({
-			type: "clear_spot",
-			payload: {
-				...spot,
-			},
-		});
+		clearSpotForm();
 	};
 
-	function subCallback(location: Location.LocationObject) {
-		console.log(location);
-		setLocationSub(location);
-	}
-
-	function subErrorHandler(error: string) {
-		console.log(error);
-	}
-
 	useEffect(() => {
-		if (pin.show) {
+		if (showConfirmUpload) {
 			expand();
 			return;
 		}
 		close();
-	}, [pin]);
-
-	useEffect(() => {
-		(async () => {
-			const subscription = await Location.watchPositionAsync(
-				{
-					accuracy: Location.Accuracy.Highest,
-					timeInterval: 1000,
-					distanceInterval: 1,
-				},
-				subCallback,
-				subErrorHandler
-			);
-			return () => subscription.remove();
-		})();
-	}, []);
+	}, [showConfirmUpload]);
 
 	return (
 		<View style={styles.confirmWrapper}>

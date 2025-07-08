@@ -2,13 +2,16 @@ import { StyleSheet } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { SpotProvider } from "@/context/SpotsContext";
+import { DB_MIGRATION, SpotProvider } from "@/context/SpotsContext";
 import * as SQLite from "expo-sqlite";
+import { Category } from "@/context/SpotsContext";
+
+const DB_NAME = "3ohtwo.db";
 
 export default function Layout() {
 	return (
 		<SQLite.SQLiteProvider
-			databaseName="3ohtwo.db"
+			databaseName={DB_NAME}
 			onInit={async (db: SQLite.SQLiteDatabase) => {
 				// Define the target database version.
 				const DATABASE_VERSION = 1;
@@ -28,10 +31,7 @@ export default function Layout() {
 
 				// For a new or uninitialized database (version 0), apply the initial migration.
 				if (currentDbVersion === 0) {
-					await db.execAsync(`
-						PRAGMA journal_mode = WAL;
-						CREATE TABLE IF NOT EXISTS spots (id INTEGER PRIMARY KEY NOT NULL, name TEXT, content TEXT, modifiedDate TEXT);
-					`);
+					await db.execAsync(DB_MIGRATION());
 					console.log(
 						"Initial migration applied, DB version:",
 						DATABASE_VERSION

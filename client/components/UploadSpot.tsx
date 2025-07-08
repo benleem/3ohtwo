@@ -13,47 +13,42 @@ import {
 	useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
-import { Link } from "expo-router";
-import { Category, useSpotContext } from "@/context/SpotsContext";
+import { Link, router } from "expo-router";
+import { DBCategory, useSpotContext } from "@/context/SpotsContext";
 import SpotImagePicker from "./SpotImagePicker";
+import * as SQLite from "expo-sqlite";
 
 type CategoryButtonProps = {
-	item: Category;
+	item: DBCategory;
 };
 
 function CategoryButton({ item }: CategoryButtonProps) {
-	const { spot, spotDispatch } = useSpotContext()!;
+	const { currentSpot, updateSpotForm } = useSpotContext()!;
 	const [selected, setSelected] = useState<boolean>(false);
 
-	const handleToggle = (item: Category) => {
-		if (spot.categories.includes(item)) {
-			spotDispatch({
-				type: "update_spot",
-				payload: {
-					...spot,
-					categories: spot.categories.filter((category) => {
-						return category !== item;
-					}),
-				},
+	const handleToggle = (item: DBCategory) => {
+		if (currentSpot.categories.includes(item)) {
+			updateSpotForm({
+				...currentSpot,
+				categories: currentSpot.categories.filter((category) => {
+					return category.id !== item.id;
+				}),
 			});
 			return;
 		}
-		spotDispatch({
-			type: "update_spot",
-			payload: {
-				...spot,
-				categories: [...spot.categories, item],
-			},
+		updateSpotForm({
+			...currentSpot,
+			categories: [...currentSpot.categories, item],
 		});
 	};
 
 	useEffect(() => {
-		if (spot.categories.includes(item)) {
+		if (currentSpot.categories.includes(item)) {
 			setSelected(true);
 			return;
 		}
 		setSelected(false);
-	}, [spot]);
+	}, [currentSpot]);
 
 	return (
 		<Pressable
@@ -64,26 +59,19 @@ function CategoryButton({ item }: CategoryButtonProps) {
 			onPress={() => handleToggle(item)}
 		>
 			<Text style={[selected ? { color: "blue" } : { color: "black " }]}>
-				{item}
+				{item.category}
 			</Text>
 		</Pressable>
 	);
 }
 
 function CategoryButtons() {
-	const iterateCategories = () => {
-		let categories: Category[] = [];
-		const keys = Object.keys(Category);
-		keys.forEach((key) => {
-			categories.push(Category[key as keyof typeof Category]);
-		});
-		return categories;
-	};
+	const { categories } = useSpotContext()!;
 
 	return (
 		<FlatList
 			contentContainerStyle={styles.flatListContainer}
-			data={iterateCategories()}
+			data={categories}
 			renderItem={({ item }) => <CategoryButton item={item} />}
 			// need to generate actually uuid at some point
 			keyExtractor={(item, index) => `${item}-${index}`}
@@ -94,10 +82,18 @@ function CategoryButtons() {
 }
 
 function FormButtons() {
+	const { currentSpot, createSpot, updateSpot, clearSpotForm } =
+		useSpotContext()!;
 	const { bottom } = useSafeAreaInsets();
 
-	const handleSubmit = () => {
-		console.log("Submitted");
+	const handleSubmit = async () => {
+		if (currentSpot.id === 0) {
+			await createSpot(currentSpot);
+		} else {
+			await updateSpot(currentSpot);
+		}
+		clearSpotForm();
+		router.push("/");
 	};
 
 	return (
@@ -122,19 +118,16 @@ function FormButtons() {
 }
 
 export default function UploadSpot() {
-	const { spot, spotDispatch } = useSpotContext()!;
+	const { currentSpot, updateSpotForm } = useSpotContext()!;
 
 	// const [switchEnabled, setSwitchEnabled] = useState(false);
 	// const toggleSwitch = () =>
 	// 	setSwitchEnabled((previousState) => !previousState);
 
 	const updateName = (text: string) => {
-		spotDispatch({
-			type: "update_spot",
-			payload: {
-				...spot,
-				name: text,
-			},
+		updateSpotForm({
+			...currentSpot,
+			name: text,
 		});
 	};
 
@@ -148,7 +141,7 @@ export default function UploadSpot() {
 						placeholderTextColor={"gray"}
 						placeholder="Spot name"
 						onChangeText={(text) => updateName(text)}
-						value={spot.name}
+						value={currentSpot.name}
 					/>
 					<CategoryButtons />
 					{/* <View style={styles.switchContainer}>
@@ -193,7 +186,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 12,
 		marginBottom: 12,
 		gap: 12,
-		maxHeight: 430,
+		// maxHeight: 430,
 		// backgroundColor: "red",
 	},
 	categoryButton: {
